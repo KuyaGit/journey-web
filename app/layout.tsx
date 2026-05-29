@@ -64,6 +64,11 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     // twitter:image likewise auto-generated from the file convention
   },
+  // icon URL is not auto-prefixed by basePath in static export — prefix manually
+  icons: {
+    icon: `${process.env.GITHUB_ACTIONS === "true" ? siteConfig.basePath : ""}/icon.png`,
+    apple: `${process.env.GITHUB_ACTIONS === "true" ? siteConfig.basePath : ""}/icon.png`,
+  },
   alternates: { canonical: "/" },
   // manifest URL is not auto-prefixed by basePath — prefix manually
   manifest: `${process.env.GITHUB_ACTIONS === "true" ? siteConfig.basePath : ""}/manifest.webmanifest`,
