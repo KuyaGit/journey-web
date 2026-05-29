@@ -4,7 +4,7 @@ export const siteConfig = {
   description:
     "Journey is a Taglish church discipleship quiz & reading app built around the Seed Cycle — GO, GROW, GLOW, GENERATE. Earn XP, unlock volumes, and grow deeper in your faith.",
   url: "https://kuyagit.github.io/journey-web",
-  basePath: "/journey-landingpage",
+  basePath: "/journey-web",
   storeLinks: {
     appStore: "#app-store",
     googlePlay: "#google-play",

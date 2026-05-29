@@ -64,14 +64,9 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     // twitter:image likewise auto-generated from the file convention
   },
-  icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
-  },
   alternates: { canonical: "/" },
   // manifest URL is not auto-prefixed by basePath — prefix manually
-  manifest: `${siteConfig.basePath}/manifest.webmanifest`,
+  manifest: `${process.env.GITHUB_ACTIONS === "true" ? siteConfig.basePath : ""}/manifest.webmanifest`,
 };
 
 // ── Viewport (separate from metadata — Next.js 16 requirement) ─────────────

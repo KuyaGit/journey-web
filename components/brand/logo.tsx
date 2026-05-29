@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { siteConfig } from "@/lib/site-config";
 
 interface LogoProps {
   className?: string;
@@ -18,10 +17,11 @@ export function Logo({ className = "", variant = "light", size = 36 }: LogoProps
       aria-label="Journey — Home"
     >
       <Image
-        src={`${siteConfig.basePath}/icon.png`}
+        src="/icon.png"
         alt="Journey app icon"
         width={size}
         height={size}
+        style={{ width: size, height: "auto" }}
         className="flex-shrink-0 rounded-[8px]"
         priority
       />
