@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import iconImage from "@/public/icon.png";
 
 interface LogoProps {
   className?: string;
@@ -17,7 +18,7 @@ export function Logo({ className = "", variant = "light", size = 36 }: LogoProps
       aria-label="Journey — Home"
     >
       <Image
-        src="/icon.png"
+        src={iconImage}
         alt="Journey app icon"
         width={size}
         height={size}
