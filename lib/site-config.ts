@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Journey",
   tagline: "Grow in faith. One day at a time.",
   description:
-    "Journey is a Taglish church discipleship quiz & reading app built around the Seed Cycle — GO, GROW, GLOW, GENERATE. Earn XP, unlock volumes, and grow deeper in your faith.",
+    "Journey is a Taglish church discipleship quiz & reading app built around the Seed Cycle — GO, GROW, GLOW, GENERATE. Earn Seeds, unlock volumes, and grow deeper in your faith.",
   url: "https://kuyagit.github.io/journey-web",
   basePath: "/journey-web",
   storeLinks: {

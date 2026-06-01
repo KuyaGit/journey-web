@@ -37,12 +37,12 @@ export default function GivePage() {
         }}
       >
         <div className="max-w-md mx-auto text-center">
-          {/* Heart */}
+          {/* Cross */}
           <div
             className="text-7xl mb-7 animate-pulse-glow inline-block"
             aria-hidden="true"
           >
-            ❤️
+            ✝️
           </div>
 
           <h1
@@ -73,8 +73,8 @@ export default function GivePage() {
               boxShadow: "0 8px 32px 0 rgba(224,90,122,0.35)",
             }}
           >
-            <span aria-hidden="true">❤️</span>
-            Send a Love Gift
+            <span aria-hidden="true">✝️</span>
+            Give a Love Gift
           </a>
 
           {/* Secondary — store links */}

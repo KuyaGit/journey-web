@@ -25,7 +25,7 @@ export function VolumesGrid() {
           Your discipleship library
         </h2>
         <p className="mt-4 text-muted max-w-sm mx-auto">
-          Each volume unlocks as you level up — quiz, read, and grow through
+          Each volume unlocks as you reach each chapter — quiz, read, and grow through
           every stage of the Seed Cycle.
         </p>
       </div>
@@ -56,7 +56,7 @@ export function VolumesGrid() {
                   <span
                     className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${lc.bg} ${lc.text}`}
                   >
-                    Lv {volume.level}
+                    Ch {volume.level}
                   </span>
                 </div>
                 <p className="text-xs text-muted leading-relaxed">

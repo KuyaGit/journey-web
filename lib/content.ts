@@ -108,7 +108,7 @@ export const features: Feature[] = [
     icon: "🎯",
     title: "Discipleship Quiz",
     description:
-      "Multiple-choice, true-or-false, and swipe-card questions that make learning stick. Earn XP, keep your streak alive, and unlock new volumes as you grow.",
+      "Multiple-choice, true-or-false, and swipe-card questions that make learning stick. Earn Seeds, keep your streak alive, and unlock new volumes as you grow.",
     accentColor: "rose",
   },
   {
@@ -138,7 +138,7 @@ export const faqs: FaqItem[] = [
   {
     question: "What is Journey?",
     answer:
-      "Journey is a discipleship quiz and reading app built around the Seed Cycle — a Filipino/English (Taglish) church discipleship framework. You learn through quizzes, earn XP, track streaks, and unlock deeper volumes as you grow in faith.",
+      "Journey is a discipleship quiz and reading app built around the Seed Cycle — a Filipino/English (Taglish) church discipleship framework. You learn through quizzes, earn Seeds, track streaks, and unlock deeper volumes as you grow in faith.",
   },
   {
     question: "Who is Journey for?",
@@ -156,9 +156,9 @@ export const faqs: FaqItem[] = [
       "Yes — Journey is completely free to download and use. The Give screen lets you support the ministry if you've been blessed and touched by the content.",
   },
   {
-    question: "How does the XP and level system work?",
+    question: "How do Seeds and Chapters work?",
     answer:
-      "You earn +10 XP per correct quiz answer and a +5 XP bonus for a perfect round with no hearts lost. As you level up, new volumes unlock — there are 6 levels and 6 volumes in total.",
+      "You earn +10 Seeds per correct quiz answer and a +5 Seeds bonus for a perfect round with no hearts lost. Accumulate Seeds to reach new Chapters — Chapter 2 at 100 Seeds, Chapter 3 at 250, Chapter 4 at 500, Chapter 5 at 1,000 — each unlocking the next volume. There are 6 Chapters and 6 volumes in total.",
   },
   {
     question: "Is Journey available on iOS and Android?",

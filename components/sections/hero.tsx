@@ -43,7 +43,7 @@ export function HeroSection() {
 
             <p className="text-base sm:text-lg text-muted leading-relaxed mb-8 max-w-md mx-auto md:mx-0 animate-fade-up delay-100">
               Journey is a Taglish discipleship quiz &amp; reading app for
-              church Life Groups — built around the Seed Cycle. Earn XP, unlock
+              church Life Groups — built around the Seed Cycle. Earn Seeds, unlock
               volumes, and go deeper every day.
             </p>
 

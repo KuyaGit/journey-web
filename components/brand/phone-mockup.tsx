@@ -75,7 +75,7 @@ export function PhoneMockup() {
               </span>
             </div>
 
-            {/* XP bar */}
+            {/* Seeds progress bar */}
             <div className="px-5 pb-4">
               <div
                 style={{

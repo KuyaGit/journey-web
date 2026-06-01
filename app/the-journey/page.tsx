@@ -121,7 +121,7 @@ export default function TheJourneyPage() {
             },
             {
               q: "How does it work?",
-              a: "You learn through quizzes, read the discipleship volumes in the app's book reader, earn XP, and unlock new volumes as you level up. Every session feels rewarding.",
+              a: "You learn through quizzes, read the discipleship volumes in the app's book reader, earn Seeds, and unlock new volumes as you reach each chapter. Every session feels rewarding.",
             },
             {
               q: "What's Taglish?",

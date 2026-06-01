@@ -19,34 +19,34 @@ export function GamificationSection() {
             Progress that feels rewarding
           </h2>
           <p className="mt-4 text-muted max-w-sm mx-auto">
-            XP, levels, streaks, and badges make every session something to look
+            Seeds, chapters, streaks, and badges make every session something to look
             forward to.
           </p>
         </div>
 
         {/* Cards */}
         <div className="grid md:grid-cols-3 gap-5">
-          {/* XP & Levels */}
+          {/* Seeds & Chapters */}
           <div
             className="bg-white rounded-3xl p-6"
             style={{ boxShadow: "0 4px 24px 0 rgba(59,42,32,0.07)" }}
           >
-            <div className="text-2xl mb-3">⚡</div>
+            <div className="text-2xl mb-3">🌱</div>
             <h3
               className="font-semibold text-clay text-[1.05rem] mb-1"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              XP &amp; Levels
+              Seeds &amp; Chapters
             </h3>
             <p className="text-xs text-muted mb-5">
-              +10 XP per correct answer. +5 XP for a perfect round.
+              +10 Seeds per correct answer. +5 Seeds for a perfect round.
             </p>
 
             {/* Progress bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-[11px]">
-                <span className="font-semibold text-muted">Level 2</span>
-                <span className="font-bold text-amber">160 / 250 XP</span>
+                <span className="font-semibold text-muted">Chapter 2</span>
+                <span className="font-bold text-amber">160 / 250 Seeds</span>
               </div>
               <div className="w-full h-2.5 bg-sand rounded-full overflow-hidden">
                 <div
@@ -58,7 +58,7 @@ export function GamificationSection() {
                   }}
                 />
               </div>
-              <p className="text-[11px] text-muted">90 XP until Level 3</p>
+              <p className="text-[11px] text-muted">90 Seeds until Chapter 3</p>
             </div>
           </div>
 

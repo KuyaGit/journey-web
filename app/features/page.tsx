@@ -10,12 +10,12 @@ import { siteConfig } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "Features — Quiz, Book Reader & Gamification",
   description:
-    "Explore Journey's features: Taglish discipleship quizzes, a rich book reader, XP & levels, daily streaks, and volume badges — all built for Filipino church Life Groups.",
+    "Explore Journey's features: Taglish discipleship quizzes, a rich book reader, Seeds & chapters, daily streaks, and volume badges — all built for Filipino church Life Groups.",
   alternates: { canonical: "/features" },
   openGraph: {
     title: "Journey Features — Quiz, Book Reader & Gamification",
     description:
-      "Discipleship quizzes, rich book reader, XP & levels, daily streaks, and volume badges.",
+      "Discipleship quizzes, rich book reader, Seeds & chapters, daily streaks, and volume badges.",
     url: `${siteConfig.url}/features`,
   },
 };
