@@ -3,8 +3,8 @@ export const siteConfig = {
   tagline: "Grow in faith. One day at a time.",
   description:
     "Journey is a Taglish church discipleship quiz & reading app built around the Seed Cycle — GO, GROW, GLOW, GENERATE. Earn Seeds, unlock volumes, and grow deeper in your faith.",
-  url: "https://kuyagit.github.io/journey-web",
-  basePath: "/journey-web",
+  // Set NEXT_PUBLIC_SITE_URL at build time (Docker ARG) or runtime env for canonical/OG/sitemap URLs
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://journey.example.com",
   storeLinks: {
     appStore: "#app-store",
     googlePlay: "#google-play",
@@ -21,6 +21,6 @@ export const siteConfig = {
   },
   organization: {
     name: "Journey App",
-    email: "hello@journey.app",
+    email: "montealtomarklowel@gmail.com",
   },
 } as const;

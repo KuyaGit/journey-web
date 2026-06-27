@@ -55,9 +55,17 @@ export function SiteFooter() {
             © {new Date().getFullYear()} {siteConfig.organization.name}. All
             rights reserved.
           </p>
-          <p className="text-xs text-cream/35">
-            Made with 🌱 for the community.
-          </p>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/data-privacy"
+              className="text-xs text-cream/35 hover:text-cream/60 transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <p className="text-xs text-cream/35">
+              Made with 🌱 for the community.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

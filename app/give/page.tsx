@@ -6,12 +6,12 @@ import { siteConfig } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "Give — Blessed & Touched",
   description:
-    "Been blessed by Journey? Send a love gift to support the discipleship ministry and help more people grow in faith.",
+    "Been blessed by Grow Together App? Send a love gift to support the discipleship ministry and help more people grow in faith.",
   alternates: { canonical: "/give" },
   openGraph: {
     title: "Give — Blessed & Touched",
     description:
-      "Been blessed by Journey? Send a love gift and support the discipleship ministry.",
+      "Been blessed by Grow Together App? Send a love gift and support the discipleship ministry.",
     url: `${siteConfig.url}/give`,
   },
 };
@@ -53,7 +53,7 @@ export default function GivePage() {
           </h1>
 
           <p className="text-lg text-muted leading-relaxed mb-5 max-w-sm mx-auto">
-            If Journey has moved you, blessed you, or helped you grow in your
+            If Grow Together has moved you, blessed you, or helped you grow in your
             faith — consider sending a love gift to support the ministry.
           </p>
 

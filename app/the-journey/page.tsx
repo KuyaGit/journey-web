@@ -6,14 +6,14 @@ import { breadcrumbJsonLd } from "@/lib/jsonld";
 import { siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
-  title: "The Journey — A Filipino Discipleship Framework",
+  title: "The Grow Together — A Filipino Discipleship Framework",
   description:
-    "Learn about The Journey discipleship program and the Seed Cycle: GO, GROW, GLOW, and GENERATE — a Taglish framework for church Life Groups.",
+    "Learn about The Grow Together discipleship program and the Seed Cycle: GO, GROW, GLOW, and GENERATE — a Taglish framework for church Life Groups.",
   alternates: { canonical: "/the-journey" },
   openGraph: {
-    title: "The Journey — A Filipino Discipleship Framework",
+    title: "The Grow Together — A Filipino Discipleship Framework",
     description:
-      "Learn about The Journey discipleship program and the Seed Cycle: GO, GROW, GLOW, and GENERATE.",
+      "Learn about Grow Together discipleship program and the Seed Cycle: GO, GROW, GLOW, and GENERATE.",
     url: `${siteConfig.url}/the-journey`,
   },
 };

@@ -15,11 +15,11 @@ export function Logo({ className = "", variant = "light", size = 36 }: LogoProps
     <Link
       href="/"
       className={`flex items-center gap-2.5 ${className}`}
-      aria-label="Journey — Home"
+      aria-label="Grow Together — Home"
     >
       <Image
         src={iconImage}
-        alt="Journey app icon"
+        alt="Grow Together app icon"
         width={size}
         height={size}
         style={{ width: size, height: "auto" }}
@@ -30,7 +30,7 @@ export function Logo({ className = "", variant = "light", size = 36 }: LogoProps
         className={`text-[1.25rem] font-semibold tracking-tight leading-none ${textColor}`}
         style={{ fontFamily: "var(--font-display)" }}
       >
-        Journey
+        Grow Together
       </span>
     </Link>
   );
