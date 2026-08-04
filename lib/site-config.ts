@@ -7,7 +7,7 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://journey.example.com",
   storeLinks: {
     appStore: "#app-store",
-    googlePlay: "#google-play",
+    googlePlay: "https://play.google.com/store/apps/details?id=grow.ja1rosario.com",
     webApp: "#web-app",
   },
   nav: [
