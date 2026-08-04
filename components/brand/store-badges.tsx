@@ -50,7 +50,7 @@ export function StoreBadges({
 
       {/* Google Play */}
       <a
-        href="#google-play"
+        href="https://play.google.com/store/apps/details?id=grow.ja1rosario.com"
         aria-label="Get it on Google Play"
         className={`inline-flex items-center gap-2.5 ${h} ${bg} rounded-xl transition-colors font-medium`}
       >
