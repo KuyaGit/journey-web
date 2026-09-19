@@ -1,0 +1,23 @@
+name: Deploy Coolify Webhook
+on:
+  workflow_run:
+    workflows: ["Build & Push to Docker Hub"]
+    types: [completed]
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Deploy Using Localhost
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            curl -X GET 'http://localhost:8000/api/v1/deploy?uuid=${{ secrets.APP_ID }}&force=false' \
+              --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
