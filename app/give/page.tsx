@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { StoreBadges } from "@/components/brand/store-badges";
 import { breadcrumbJsonLd } from "@/lib/jsonld";
 import { siteConfig } from "@/lib/site-config";
@@ -65,8 +66,8 @@ export default function GivePage() {
           </p>
 
           {/* CTA */}
-          <a
-            href="#give"
+          <Link
+            href="/give/qr"
             className="inline-flex items-center gap-2.5 text-base font-semibold text-cream px-8 py-4 rounded-2xl transition-all hover:-translate-y-0.5"
             style={{
               background: "#e05a7a",
@@ -75,7 +76,7 @@ export default function GivePage() {
           >
             <span aria-hidden="true">✝️</span>
             Give a Love Gift
-          </a>
+          </Link>
 
           {/* Secondary — store links */}
           <div className="mt-16 pt-8 border-t border-sand">
