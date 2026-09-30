@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { siteConfig } from "@/lib/site-config";
-import { organizationJsonLd, webSiteJsonLd } from "@/lib/jsonld";
 
 // ── Fonts ──────────────────────────────────────────────────────────────────
 const geistSans = Geist({
@@ -85,30 +82,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const orgLd = organizationJsonLd();
-  const webSiteLd = webSiteJsonLd();
-
+  // Header, footer and JSON-LD live in app/(site)/layout.tsx so /admin stays free of marketing chrome.
   return (
     <html
       lang="en"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-cream text-clay">
-        {/* Organisation + WebSite structured data */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteLd) }}
-        />
-
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <SiteFooter />
-      </body>
+      <body className="min-h-full flex flex-col bg-cream text-clay">{children}</body>
     </html>
   );
 }

@@ -82,3 +82,35 @@ body {
   outline-offset: 3px;
   border-radius: 6px;
 }
+
+/* ── Admin ────────────────────────────────────────────────────────────────── *
+ * The global focus rule above forces a 6px radius, which would reshape every   *
+ * rounded control in the admin on focus. Fall back to each element's own       *
+ * utility radius there instead.                                                */
+.admin :focus-visible {
+  border-radius: revert-layer;
+  outline-offset: 2px;
+}
+.admin :is(input, select, textarea):focus-visible {
+  outline: none;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes sheet-in {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.animate-overlay-in { animation: overlay-in 0.2s ease-out both; }
+.animate-pop-in     { animation: pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-sheet-in   { animation: sheet-in 0.3s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-overlay-in, .animate-pop-in, .animate-sheet-in, .animate-fade-up { animation: none; }
+}
