@@ -1,20 +1,55 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { SectionWrapper } from "@/components/ui/section";
 import { breadcrumbJsonLd } from "@/lib/jsonld";
 import { siteConfig } from "@/lib/site-config";
 
+// Set this to the day this version goes live (the day the pull request is merged).
+const EFFECTIVE_DATE = "24 October 2026";
+
+const DESCRIPTION =
+  "How Grow handles your data: your progress stays on your device, and a Life Group request you choose to send is stored and emailed to the leader you pick.";
+
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description:
-    "How Grow Together handles your data — nothing is collected, stored, or shared. Everything stays on your device.",
+  description: DESCRIPTION,
   alternates: { canonical: "/data-privacy" },
   openGraph: {
-    title: "Privacy Policy — Grow Together",
-    description:
-      "How Grow Together handles your data — nothing is collected, stored, or shared. Everything stays on your device.",
+    title: "Privacy Policy — Grow",
+    description: DESCRIPTION,
     url: `${siteConfig.url}/data-privacy`,
   },
 };
+
+function PolicySection({
+  title,
+  children,
+}: {
+  title: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <h2
+        className="text-xl font-semibold text-clay mb-3"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {title}
+      </h2>
+      <div className="space-y-4 text-base leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
+function BulletList({ items }: { items: ReactNode[] }) {
+  return (
+    <ul className="list-disc list-inside space-y-1.5 text-base leading-relaxed pl-2">
+      {items.map((item, index) => (
+        <li key={index}>{item}</li>
+      ))}
+    </ul>
+  );
+}
 
 export default function DataPrivacyPage() {
   const breadcrumbLd = breadcrumbJsonLd([
@@ -47,11 +82,13 @@ export default function DataPrivacyPage() {
             Privacy Policy
           </h1>
           <p className="text-sm text-muted mb-2">
-            <strong>Effective date:</strong> 27 June 2026
+            <strong>Effective date:</strong> {EFFECTIVE_DATE}
           </p>
           <p className="text-lg text-muted leading-relaxed max-w-xl mx-auto">
-            Grow Together does not collect, store, or share any personal data.
-            Everything you do in the app stays on your device.
+            Most of Grow stays on your device. If you choose to send a Life
+            Group request, the details you enter are stored by us and emailed to
+            the leader you chose. We do not sell your information and we do not
+            use it for advertising.
           </p>
         </div>
       </section>
@@ -59,154 +96,165 @@ export default function DataPrivacyPage() {
       {/* Policy body */}
       <SectionWrapper className="bg-cream">
         <div className="max-w-3xl mx-auto space-y-10 text-muted">
-
-          {/* Information we collect */}
-          <div>
-            <h2
-              className="text-xl font-semibold text-clay mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Information we collect
-            </h2>
-            <p className="text-base leading-relaxed mb-4">
-              None of your information is transmitted to us or any third party.
-              The app saves the following <strong>only on your device</strong>,
-              to track your progress:
+          <PolicySection title="Information we collect">
+            <p>
+              <strong>On your device only</strong> (never sent to us):
             </p>
-            <ul className="list-disc list-inside space-y-1.5 text-base leading-relaxed pl-2">
-              <li>reading progress and reading streak</li>
-              <li>quiz scores, hearts, and completed volumes</li>
-              <li>Seeds, Chapters, and earned badges</li>
-              <li>whether you have seen the first-launch onboarding</li>
-            </ul>
-            <p className="text-base leading-relaxed mt-4">
-              This data is stored locally using your device&apos;s standard app
-              storage (AsyncStorage). It never leaves your device and is not
-              accessible to us.
+            <BulletList
+              items={[
+                "reading progress and reading streak",
+                "quiz scores, hearts, and completed volumes",
+                "Seeds, Chapters, and earned badges",
+                "whether you have seen the first-launch onboarding",
+                "a saved draft of your Life Group form",
+              ]}
+            />
+            <p>
+              This is kept in your device&apos;s app storage. If you uninstall
+              the app, it is removed.
             </p>
-          </div>
+            <p>
+              <strong>Only if you send a Life Group request:</strong> your full
+              name, email address, mobile number, and Messenger name or link.
+              If you choose to, you can also give your Facebook or Instagram,
+              age, location, occupation or school, a short introduction, and
+              your reason for joining. You also choose your gender group and
+              life stage and, if you choose LGBT, the group you are most
+              comfortable joining.
+            </p>
+            <p>
+              <strong>
+                Your gender group choice, and the LGBT option in particular, can
+                reveal sensitive personal information about you.
+              </strong>{" "}
+              You only give it by sending a request, and we use it only to match
+              you with a suitable leader and let that leader know.
+            </p>
+            <p>
+              We also keep the leader you chose, the status of your request, the
+              times it was sent and changed, and a one-way scrambled (hashed)
+              form of your internet address, which we use only to stop spam. We
+              do not keep your internet address itself.
+            </p>
+          </PolicySection>
 
           <hr className="border-sand" />
 
-          {/* How your data is stored */}
-          <div>
-            <h2
-              className="text-xl font-semibold text-clay mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              How your data is stored
-            </h2>
-            <p className="text-base leading-relaxed">
-              All progress is kept locally on your device. If you uninstall the
-              app, this locally stored data is removed.
+          <PolicySection title="Why we use it, and who receives it">
+            <BulletList
+              items={[
+                "To connect you with the leader you chose. We email your request, including every detail above, to that leader. After that the leader holds your details in their own email and is responsible for them. We ask leaders to use them only to contact you about Life Group membership.",
+                "To show you the status of your request and to email you when it changes, for example when the leader accepts.",
+                "To keep the service safe and working, such as spam limits and finding emails that failed to send.",
+              ]}
+            />
+            <p>
+              Our service providers handle your request only to run the
+              service: Supabase (our database, hosted in Sydney, Australia), our
+              own email automation server, and our mail provider. Hygraph holds
+              the leaders&apos; public profiles and holds no information about
+              you.
             </p>
-          </div>
+          </PolicySection>
 
           <hr className="border-sand" />
 
-          {/* No accounts, ads, or analytics */}
-          <div>
-            <h2
-              className="text-xl font-semibold text-clay mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              No accounts, ads, or analytics
-            </h2>
-            <p className="text-base leading-relaxed">
-              Grow Together has no sign-in or user accounts, shows no ads, and
-              includes no analytics or crash-reporting services. The app has no
-              backend server and does not make network requests to transmit your
-              data.
+          <PolicySection title="How long we keep it">
+            <p>
+              We delete a Life Group request 12 months after it was last
+              updated. You can ask us to delete it sooner (see below).
             </p>
-          </div>
+          </PolicySection>
 
           <hr className="border-sand" />
 
-          {/* The Give feature */}
-          <div>
-            <h2
-              className="text-xl font-semibold text-clay mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              The &ldquo;Give&rdquo; feature
-            </h2>
-            <p className="text-base leading-relaxed">
-              The Give screen displays giving information (such as bank-transfer
-              details) so you can give externally if you choose. It only{" "}
-              <em>displays</em> this information — no payment is collected or
-              processed inside the app.
+          <PolicySection title="Your choices and rights">
+            <p>
+              Sending a request is optional. You may ask us to show you, correct
+              or delete your information, to stop using it, or to withdraw your
+              consent, by emailing the address below. We will answer within a
+              reasonable time.
             </p>
-          </div>
+            <p>
+              Deleting your request from our records does not remove the email
+              the leader has already received, so we will also ask that leader
+              to delete it. If you are in the Philippines, you may also complain
+              to the National Privacy Commission.
+            </p>
+          </PolicySection>
 
           <hr className="border-sand" />
 
-          {/* Children's privacy */}
-          <div>
-            <h2
-              className="text-xl font-semibold text-clay mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Children&apos;s privacy
-            </h2>
-            <p className="text-base leading-relaxed">
-              The app is intended for users aged 13 and older and is not
-              directed at children. We do not knowingly collect any data from
+          <PolicySection title="Status access code">
+            <p>
+              After you send a request, the app keeps a private access code on
+              your device so it can show you the status. It is not shared with
               anyone.
             </p>
-          </div>
+          </PolicySection>
 
           <hr className="border-sand" />
 
-          {/* Third-party services */}
-          <div>
-            <h2
-              className="text-xl font-semibold text-clay mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Third-party services
-            </h2>
-            <p className="text-base leading-relaxed">
-              The app does not use third-party services that collect your data.
+          <PolicySection title="No accounts, ads, or analytics">
+            <p>
+              Grow has no sign-in or user accounts, shows no ads, and includes
+              no analytics or crash-reporting services.
             </p>
-          </div>
+          </PolicySection>
 
           <hr className="border-sand" />
 
-          {/* Changes to this policy */}
-          <div>
-            <h2
-              className="text-xl font-semibold text-clay mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Changes to this policy
-            </h2>
-            <p className="text-base leading-relaxed">
+          <PolicySection title="Security">
+            <p>
+              Requests are sent over an encrypted connection and are stored in a
+              database that the app cannot read directly. Access codes are
+              stored only in scrambled form. No system is perfectly secure, so
+              please share only what you are comfortable with.
+            </p>
+          </PolicySection>
+
+          <hr className="border-sand" />
+
+          <PolicySection
+            title={<>The &ldquo;Give&rdquo; feature</>}
+          >
+            <p>
+              The Give screen displays giving information (such as bank-transfer
+              details) so you can give externally if you choose. It only{" "}
+              <em>displays</em> this information. No payment is collected or
+              processed inside the app.
+            </p>
+          </PolicySection>
+
+          <hr className="border-sand" />
+
+          <PolicySection title="Children's privacy">
+            <p>The app is for people aged 13 and older.</p>
+          </PolicySection>
+
+          <hr className="border-sand" />
+
+          <PolicySection title="Changes to this policy">
+            <p>
               We may update this policy from time to time. The effective date
-              above reflects the latest version.
+              above shows the latest version, and we will update the app if the
+              way we handle your information changes.
             </p>
-          </div>
+          </PolicySection>
 
           <hr className="border-sand" />
 
-          {/* Contact */}
-          <div>
-            <h2
-              className="text-xl font-semibold text-clay mb-3"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Contact
-            </h2>
-            <p className="text-base leading-relaxed">
-              Questions about this policy:{" "}
+          <PolicySection title="Contact">
+            <p>
+              Questions or requests about your information:{" "}
               <a
-                href="mailto:montealtomarklowel@gmail.com"
+                href={`mailto:${siteConfig.organization.email}`}
                 className="text-rose hover:text-rose-deep underline underline-offset-2 transition-colors"
               >
-                montealtomarklowel@gmail.com
+                {siteConfig.organization.email}
               </a>
             </p>
-          </div>
-
+          </PolicySection>
         </div>
       </SectionWrapper>
     </>
