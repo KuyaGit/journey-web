@@ -50,7 +50,7 @@ export default function LeaderDeclinedPage() {
         </div>
 
         <Link
-          href="/"
+          href="https://grow.ja1rosario.com"
           className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-rose-deep underline-offset-4 hover:underline"
         >
           Back to Journey
