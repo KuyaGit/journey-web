@@ -9,6 +9,11 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/token";
 // a valid session (requireAdmin in lib/auth/dal.ts), and Host headers can be forged.
 const ADMIN_SUBDOMAIN = "admin";
 
+// TEMPORARY: the landing host serves only the leader thank-you page; every other path redirects
+// to it. Set to false (or delete this block and its use below) to restore the full site.
+const LEADER_THANKS_ONLY = true;
+const LEADER_THANKS_PATH = "/leader-thanks";
+
 function hostOf(request: NextRequest): string {
   const raw = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "";
   return raw.split(",")[0].trim().split(":")[0].toLowerCase();
@@ -34,6 +39,9 @@ export async function proxy(request: NextRequest) {
   const isInvitePath = pathname === "/leader-invite" || pathname.startsWith("/leader-invite/");
 
   if (!onAdminHost) {
+    if (LEADER_THANKS_ONLY) {
+      return pathname === LEADER_THANKS_PATH ? NextResponse.next() : redirectTo(request, LEADER_THANKS_PATH);
+    }
     // Landing host. In development plain localhost stays unrestricted so /admin is reachable.
     if (process.env.NODE_ENV !== "production") return NextResponse.next();
     if (isAdminPath || isInvitePath) {
