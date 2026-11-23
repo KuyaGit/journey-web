@@ -25,10 +25,10 @@ export type LeaderInput = {
   name: string;
   slug: string;
   shortBio: string;
-  lifeGroupType: string;
-  gender: Gender | null;
+  gender: Gender;
+  /** Always `[gender]`: a leader serves their own gender. Set by the server, never posted. */
   supportedGenders: Gender[];
-  lifeStages: LifeStage | null;
+  lifeStages: LifeStage;
   acceptsLgbt: boolean;
   isActive: boolean;
   facebookUrl: string;
@@ -71,15 +71,15 @@ export function parseLeaderForm(fd: FormData): ParseResult {
   const email = String(fd.get("email") ?? "").trim().toLowerCase();
   const genderRaw = String(fd.get("gender") ?? "");
   const stageRaw = String(fd.get("lifeStages") ?? "");
-  const supported = fd.getAll("supportedGenders").map(String);
   const memberRaw = String(fd.get("memberCount") ?? "").trim();
 
   if (!name) errors.push("Name is required.");
   if (!slug) errors.push("Slug is required.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("A valid contact email is required.");
-  if (genderRaw && !isGender(genderRaw)) errors.push("Invalid gender.");
-  if (stageRaw && !isStage(stageRaw)) errors.push("Invalid life stage.");
-  if (!supported.every(isGender)) errors.push("Invalid supported gender.");
+  if (!genderRaw) errors.push("Please choose a gender.");
+  else if (!isGender(genderRaw)) errors.push("Invalid gender.");
+  if (!stageRaw) errors.push("Please choose the life stage you lead.");
+  else if (!isStage(stageRaw)) errors.push("Invalid life stage.");
 
   const urls = {
     facebookUrl: String(fd.get("facebookUrl") ?? "").trim(),
@@ -100,17 +100,21 @@ export function parseLeaderForm(fd: FormData): ParseResult {
 
   if (errors.length) return { ok: false, errors };
 
+  // Both are valid here: the checks above return early otherwise.
+  const gender = genderRaw as Gender;
+
   return {
     ok: true,
     value: {
       name,
       slug,
       shortBio: String(fd.get("shortBio") ?? "").trim(),
-      lifeGroupType: String(fd.get("lifeGroupType") ?? "").trim(),
-      gender: genderRaw ? (genderRaw as Gender) : null,
-      supportedGenders: supported as Gender[],
-      lifeStages: stageRaw ? (stageRaw as LifeStage) : null,
-      acceptsLgbt: fd.get("acceptsLgbt") === "on",
+      gender,
+      // A leader serves their own gender. Any posted supportedGenders is ignored on purpose.
+      supportedGenders: [gender],
+      lifeStages: stageRaw as LifeStage,
+      // An LGBT leader's group is for LGBT members, so the toggle is implied.
+      acceptsLgbt: gender === "lgbtqia" || fd.get("acceptsLgbt") === "on",
       isActive: fd.get("isActive") === "on",
       ...urls,
       hobbies: list(fd.get("hobbies")),

@@ -15,7 +15,7 @@ export type InviteState =
  * expires (one day), typing their own email. Whatever they send is only ever a draft that an admin
  * approves, so this action grants no access to the app.
  */
-export async function createInviteAction(_prev: InviteState, _formData: FormData): Promise<InviteState> {
+export async function createInviteAction(): Promise<InviteState> {
   await requireAdmin();
 
   try {

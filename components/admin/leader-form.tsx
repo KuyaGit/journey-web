@@ -9,6 +9,7 @@ import {
   LIFE_STAGES,
   LIFE_STAGE_LABELS,
   slugify,
+  type Gender,
 } from "@/lib/leaders/schema";
 import type { AdminLeader } from "@/lib/hygraph/leaders";
 import type { HumanChallenge } from "@/lib/human-check";
@@ -26,6 +27,12 @@ type Props = {
   initialName?: string;
   /** When set, the submit button stays disabled until the visitor passes the "I'm not a robot" check. */
   humanCheck?: () => Promise<HumanChallenge | null>;
+};
+
+const GROUP_LABELS: Record<Gender, string> = {
+  male: "Men",
+  female: "Women",
+  lgbtqia: "LGBT",
 };
 
 function Section({
@@ -53,16 +60,28 @@ function Choice({
   value,
   label,
   defaultChecked,
+  required,
+  onChange,
 }: {
   type: "radio" | "checkbox";
   name: string;
   value: string;
   label: string;
   defaultChecked?: boolean;
+  required?: boolean;
+  onChange?: () => void;
 }) {
   return (
     <label className="cursor-pointer">
-      <input type={type} name={name} value={value} defaultChecked={defaultChecked} className="peer sr-only" />
+      <input
+        type={type}
+        name={name}
+        value={value}
+        defaultChecked={defaultChecked}
+        required={required}
+        onChange={onChange}
+        className="peer sr-only"
+      />
       <span className="block rounded-xl border border-sand bg-white px-3.5 py-2 text-sm text-clay transition hover:border-clay/30 peer-checked:border-clay peer-checked:bg-clay peer-checked:text-cream peer-focus-visible:ring-4 peer-focus-visible:ring-rose/25">
         {label}
       </span>
@@ -110,6 +129,8 @@ export function LeaderForm({
   const [name, setName] = useState(leader?.name ?? initialName ?? "");
   const [slug, setSlug] = useState(leader?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(!!leader);
+  // A leader serves their own gender, so this drives the read-only "group" line and the LGBT toggle.
+  const [gender, setGender] = useState<Gender | "">(leader?.gender ?? "");
 
   return (
     <form
@@ -190,30 +211,19 @@ export function LeaderForm({
           Short bio
           <textarea name="shortBio" rows={3} defaultValue={leader?.shortBio ?? ""} className={inputCls} />
         </label>
-        <div className={invite ? "" : "grid gap-5 sm:grid-cols-2"}>
+        {!invite && (
           <label className={labelCls}>
-            Life group type
+            Member count
             <input
-              name="lifeGroupType"
-              placeholder="e.g. Professionals"
-              defaultValue={leader?.lifeGroupType ?? ""}
+              name="memberCount"
+              type="number"
+              min={0}
+              step={1}
+              defaultValue={leader?.memberCount ?? ""}
               className={inputCls}
             />
           </label>
-          {!invite && (
-            <label className={labelCls}>
-              Member count
-              <input
-                name="memberCount"
-                type="number"
-                min={0}
-                step={1}
-                defaultValue={leader?.memberCount ?? ""}
-                className={inputCls}
-              />
-            </label>
-          )}
-        </div>
+        )}
       </Section>
 
       <Section
@@ -225,9 +235,8 @@ export function LeaderForm({
         }
       >
         <fieldset>
-          <legend className={labelCls}>{invite ? "Your gender" : "Leader's gender"}</legend>
+          <legend className={labelCls}>{invite ? "Your gender *" : "Leader's gender *"}</legend>
           <div className="mt-2 flex flex-wrap gap-2">
-            <Choice type="radio" name="gender" value="" label="Not set" defaultChecked={!leader?.gender} />
             {GENDERS.map((g) => (
               <Choice
                 key={g}
@@ -236,15 +245,21 @@ export function LeaderForm({
                 value={g}
                 label={GENDER_LABELS[g]}
                 defaultChecked={leader?.gender === g}
+                required
+                onChange={() => setGender(g)}
               />
             ))}
           </div>
+          <p className="mt-2 text-xs text-muted">
+            {gender
+              ? `${invite ? "Your group" : "This leader's group"}: ${GROUP_LABELS[gender]}.`
+              : `Choose ${invite ? "your" : "the leader's"} gender. It decides who ${invite ? "you lead" : "they lead"}.`}
+          </p>
         </fieldset>
 
         <fieldset>
-          <legend className={labelCls}>{invite ? "Life stage you lead *" : "Life stage served"}</legend>
+          <legend className={labelCls}>{invite ? "Life stage you lead *" : "Life stage served *"}</legend>
           <div className="mt-2 flex flex-wrap gap-2">
-            <Choice type="radio" name="lifeStages" value="" label="Not set" defaultChecked={!leader?.lifeStages} />
             {LIFE_STAGES.map((s) => (
               <Choice
                 key={s}
@@ -253,41 +268,26 @@ export function LeaderForm({
                 value={s}
                 label={LIFE_STAGE_LABELS[s]}
                 defaultChecked={leader?.lifeStages === s}
-              />
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend className={labelCls}>Supported genders</legend>
-          <p className="text-xs text-muted">
-            {invite ? "Who you welcome into your group." : "Who this leader accepts into the group."}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {GENDERS.map((g) => (
-              <Choice
-                key={g}
-                type="checkbox"
-                name="supportedGenders"
-                value={g}
-                label={GENDER_LABELS[g]}
-                defaultChecked={leader?.supportedGenders.includes(g)}
+                required
               />
             ))}
           </div>
         </fieldset>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Toggle
-            name="acceptsLgbt"
-            label="Accepts LGBT"
-            hint={
-              invite
-                ? "Your group welcomes LGBT members."
-                : "Shown to LGBT members who pick this group."
-            }
-            defaultChecked={leader?.acceptsLgbt ?? false}
-          />
+          {/* An LGBT leader's group is for LGBT members already, so the server turns this on for them. */}
+          {gender !== "lgbtqia" && (
+            <Toggle
+              name="acceptsLgbt"
+              label="Accepts LGBT"
+              hint={
+                invite
+                  ? "Your group welcomes LGBT members."
+                  : "Shown to LGBT members who pick this group."
+              }
+              defaultChecked={leader?.acceptsLgbt ?? false}
+            />
+          )}
           {!invite && (
             <Toggle
               name="isActive"

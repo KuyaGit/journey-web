@@ -63,12 +63,7 @@ export async function submitInvite(token: string, _prev: SaveState, formData: Fo
   const parsed = parseLeaderForm(formData);
   if (!parsed.ok) return { errors: parsed.errors };
 
-  const errors: string[] = [];
-  if (!parsed.value.lifeStages) errors.push("Please choose the life stage you lead.");
-  if (parsed.value.supportedGenders.length === 0 && !parsed.value.acceptsLgbt) {
-    errors.push("Please choose who you welcome into your group.");
-  }
-  if (errors.length) return { errors };
+  // Gender and life stage are required by parseLeaderForm, which also sets who the leader serves.
 
   try {
     // One profile per email: once a leader exists for this email (pending or live), it can't be sent again.

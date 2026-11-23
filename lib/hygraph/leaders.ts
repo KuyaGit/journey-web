@@ -9,7 +9,6 @@ export type AdminLeader = {
   name: string;
   slug: string;
   shortBio: string | null;
-  lifeGroupType: string | null;
   gender: Gender | null;
   supportedGenders: Gender[];
   lifeStages: LifeStage | null;
@@ -29,7 +28,7 @@ export type AdminLeader = {
 };
 
 const FIELDS = `
-  id name slug shortBio lifeGroupType gender supportedGenders lifeStages
+  id name slug shortBio gender supportedGenders lifeStages
   acceptsLgbt isActive facebookUrl instagramUrl twitterUrl hobbies interests languages
   memberCount
   profileImage { id url }
@@ -66,7 +65,6 @@ function leaderData(v: LeaderInput, imageId: string | null) {
     name: v.name,
     slug: v.slug,
     shortBio: v.shortBio || null,
-    lifeGroupType: v.lifeGroupType || null,
     gender: v.gender,
     supportedGenders: v.supportedGenders,
     lifeStages: v.lifeStages,

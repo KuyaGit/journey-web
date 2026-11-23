@@ -90,7 +90,9 @@ export function ImageCropper({ name, initialUrl = null }: Props) {
   function pick(file: File | undefined) {
     setError(null);
     if (!file) return;
-    if (!/^image\/(jpeg|png)$/.test(file.type)) return setError("Please choose a JPG or PNG image.");
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      return setError("This photo format isn't supported. Please choose a JPG, PNG or WebP photo.");
+    }
     if (file.size > MAX_SOURCE_BYTES) return setError("That image is over 20 MB. Choose a smaller one.");
     setSource({ url: URL.createObjectURL(file), name: file.name.replace(/\.[^.]+$/, "") || "leader" });
   }
@@ -129,7 +131,7 @@ export function ImageCropper({ name, initialUrl = null }: Props) {
       <input
         ref={picker}
         type="file"
-        accept="image/jpeg,image/png"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={(e) => pick(e.target.files?.[0])}
       />
@@ -168,7 +170,7 @@ export function ImageCropper({ name, initialUrl = null }: Props) {
 
         <div className="space-y-1 text-muted">
           <p>
-            JPG or PNG. You&apos;ll crop it to a square, saved as a compact high-quality image (up to{" "}
+            JPG, PNG or WebP. You&apos;ll crop it to a square, saved as a compact high-quality image (up to{" "}
             {OUTPUT_SIZE}×{OUTPUT_SIZE}).
           </p>
           {changed && (
@@ -204,6 +206,14 @@ export function ImageCropper({ name, initialUrl = null }: Props) {
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={(_, pixels) => setArea(pixels)}
+                mediaProps={{
+                  // The browser couldn't decode the file (e.g. an unusual format). Say so instead of
+                  // leaving a blank crop box.
+                  onError: () => {
+                    closeCropper();
+                    setError("Could not read that photo. Please try another one.");
+                  },
+                }}
               />
             </div>
             <label className="mt-4 flex items-center gap-3">

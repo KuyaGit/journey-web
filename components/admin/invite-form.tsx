@@ -79,13 +79,21 @@ export function InviteForm() {
 
   useEffect(() => {
     if (!result) return;
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(id);
+    // Refresh straight away (the page may have been open for hours before generating), then every 30s.
+    const tick = () => setNow(Date.now());
+    const first = setTimeout(tick, 0);
+    const id = setInterval(tick, 30_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
   }, [result]);
 
   const expiresAt = result ? new Date(result.expiresAt) : null;
   const expired = !!expiresAt && now >= expiresAt.getTime();
+
+  // A QR that points at localhost can't be opened from a phone.
+  const localOnly = !!result && /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/)/.test(result.link);
 
   const message =
     result && expiresAt
@@ -180,6 +188,16 @@ export function InviteForm() {
               </div>
             </div>
           </div>
+
+          {localOnly && !expired && (
+            <p role="alert" className="flex items-start gap-2 rounded-xl bg-amber/15 px-3.5 py-2.5 text-sm text-[#9a6412]">
+              <Icon name="alert" className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                This QR points to localhost, so phones can&apos;t open it. Open the admin at your
+                computer&apos;s network address (for example http://192.168.1.20:3000) and generate it again.
+              </span>
+            </p>
+          )}
 
           <p className="text-xs text-muted">
             Anyone with this QR or link can send a profile until it expires, so share it only with the

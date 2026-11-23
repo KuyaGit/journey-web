@@ -1,6 +1,8 @@
 import type { Gender, LifeStage } from "./schema";
 
 // Product-owner rule (final). Do not change without asking them.
+// A leader serves their own gender (male -> men, female -> women, lgbtqia -> LGBT members), so an
+// LGBT-led group is found by LGBT members directly. The mobile app keeps its own copy of this rule.
 export type MatchableLeader = {
   isActive: boolean;
   lifeStages: LifeStage | null;
@@ -19,6 +21,7 @@ export function matches(leader: MatchableLeader, user: UserProfile): boolean {
   if (!leader.isActive) return false;
   if (leader.lifeStages !== user.lifeStage) return false;
   if (user.gender === "lgbtqia") {
+    if (leader.supportedGenders.includes("lgbtqia")) return true;
     return (
       !!user.comfortGroup &&
       leader.supportedGenders.includes(user.comfortGroup) &&

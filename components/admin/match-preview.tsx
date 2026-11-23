@@ -11,6 +11,7 @@ const STAGE_SHORT: Record<LifeStage, string> = {
 const PROFILES = [
   { label: "Male", gender: "male" as const },
   { label: "Female", gender: "female" as const },
+  { label: "LGBT, no group chosen", gender: "lgbtqia" as const },
   { label: "LGBT → Male group", gender: "lgbtqia" as const, comfortGroup: "male" as const },
   { label: "LGBT → Female group", gender: "lgbtqia" as const, comfortGroup: "female" as const },
 ];

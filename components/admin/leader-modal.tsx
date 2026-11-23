@@ -173,7 +173,6 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
                 </p>
               )}
               <dl className="grid grid-cols-2 gap-x-4 gap-y-5">
-                <Field label="Group type">{leader.lifeGroupType || <span className="text-muted/60">Not set</span>}</Field>
                 <Field label="Leader's gender">
                   {leader.gender ? GENDER_LABELS[leader.gender] : <span className="text-muted/60">Not set</span>}
                 </Field>
