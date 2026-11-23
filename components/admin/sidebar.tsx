@@ -13,7 +13,7 @@ const NAV: { href: string; label: string; icon: IconName; match: (p: string) => 
     match: (p) => p.startsWith("/admin/leaders") && p !== "/admin/leaders/new",
   },
   { href: "/admin/leaders/new", label: "New leader", icon: "plus", match: (p) => p === "/admin/leaders/new" },
-  { href: "/admin/invites", label: "Invite leader", icon: "mail", match: (p) => p.startsWith("/admin/invites") },
+  { href: "/admin/invites", label: "Invite leaders", icon: "qr", match: (p) => p.startsWith("/admin/invites") },
 ];
 
 function Brand() {

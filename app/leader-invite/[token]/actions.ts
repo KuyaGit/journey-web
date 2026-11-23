@@ -11,16 +11,20 @@ import { uploadFormImage } from "@/lib/leaders/image";
 import { parseLeaderForm, slugify } from "@/lib/leaders/schema";
 import { clientIp, createLimiter } from "@/lib/rate-limit";
 
-// Counts every submit attempt per IP, not only failures.
-const limiter = createLimiter({ max: 10, windowMs: 60 * 60 * 1000 });
+// Counts every submit attempt per IP, not only failures. One QR code is shared by many leaders, often
+// on the same church Wi-Fi (one IP), so these limits are generous. The puzzle, the honeypot, the
+// one-profile-per-email rule and admin approval still stop abuse.
+const limiter = createLimiter({ max: 40, windowMs: 60 * 60 * 1000 });
 
-const challengeLimiter = createLimiter({ max: 30, windowMs: 60 * 60 * 1000 });
+const challengeLimiter = createLimiter({ max: 120, windowMs: 60 * 60 * 1000 });
 
 const INVALID = "This invite link is no longer valid. Ask your admin for a new one.";
+const EXPIRED = "This QR code has expired. Ask your admin for a new one.";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Issues the "I'm not a robot" puzzle. Only holders of a valid invite link can ask for one. */
 export async function requestHumanCheck(token: string): Promise<HumanChallenge | null> {
-  if (!(await verifyInvite(token))) return null;
+  if ((await verifyInvite(token)).status !== "valid") return null;
   const ip = clientIp(await headers());
   if (challengeLimiter.isBlocked(ip)) return null;
   challengeLimiter.fail(ip);
@@ -28,12 +32,14 @@ export async function requestHumanCheck(token: string): Promise<HumanChallenge |
 }
 
 /**
- * Public action. The invite token is the only credential. The result is always a DRAFT:
- * nothing reaches the app until an admin approves it. Never log the email, phone or token.
+ * Public action. The invite token is the only credential. The result is always a DRAFT (pending):
+ * nothing reaches the app until an admin approves it. This flow must NEVER call publishLeader.
+ * Never log the email, phone or token.
  */
 export async function submitInvite(token: string, _prev: SaveState, formData: FormData): Promise<SaveState> {
   const claims = await verifyInvite(token);
-  if (!claims) return { errors: [INVALID] };
+  if (claims.status === "expired") return { errors: [EXPIRED] };
+  if (claims.status === "invalid") return { errors: [INVALID] };
 
   const ip = clientIp(await headers());
   if (limiter.isBlocked(ip)) return { errors: ["Too many attempts. Please try again later."] };
@@ -47,8 +53,11 @@ export async function submitInvite(token: string, _prev: SaveState, formData: Fo
     return { errors: ["Please confirm you're not a robot, then try again."] };
   }
 
-  // The leader can't change their email, and can't choose their slug or active state.
-  formData.set("email", claims.email);
+  // Older links are tied to one email, which the leader can't change. Open QR links take the email the
+  // leader typed. Either way they can't choose their slug or active state.
+  const email = (claims.email ?? String(formData.get("email") ?? "")).trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) return { errors: ["Enter a valid email address."] };
+  formData.set("email", email);
   formData.delete("slug");
 
   const parsed = parseLeaderForm(formData);
@@ -62,9 +71,15 @@ export async function submitInvite(token: string, _prev: SaveState, formData: Fo
   if (errors.length) return { errors };
 
   try {
-    // Single use: once a leader exists for this email, the invite is spent.
-    if (await contactEmailExists(claims.email)) {
-      return { errors: ["This invite was already used. Ask your admin for a new one if you need to change something."] };
+    // One profile per email: once a leader exists for this email (pending or live), it can't be sent again.
+    if (await contactEmailExists(email)) {
+      return {
+        errors: [
+          claims.email
+            ? "This invite was already used. Ask your admin for a new one if you need to change something."
+            : "A profile with this email has already been sent. Ask your admin if you need to change something.",
+        ],
+      };
     }
 
     const { imageId, error } = await uploadFormImage(formData);
