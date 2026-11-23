@@ -19,17 +19,30 @@ function Notice({ icon, title, children }: { icon: IconName; title: string; chil
 
 export default async function LeaderInvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const claims = await verifyInvite(token);
+  const invite = await verifyInvite(token);
 
-  if (!claims) {
+  if (invite.status === "expired") {
     return (
-      <Notice icon="lock" title="This link isn't valid">
-        It may have expired or been mistyped. Please ask your admin to send you a new invite link.
+      <Notice icon="clock" title="This QR code has expired">
+        Invite links only last 24 hours. Please ask your admin for a new QR code or link.
       </Notice>
     );
   }
 
-  if (await contactEmailExists(claims.email)) {
+  if (invite.status === "invalid") {
+    return (
+      <Notice icon="lock" title="This link isn't valid">
+        It may have been mistyped or copied incompletely. Please ask your admin to send you a new QR code or
+        link.
+      </Notice>
+    );
+  }
+
+  const claims = invite;
+
+  // Older links were issued for one email and are single use. Open QR links have no email, and the
+  // submit action checks the email each leader types.
+  if (claims.email && (await contactEmailExists(claims.email))) {
     return (
       <Notice icon="check" title="This invite was already used">
         Your profile has been received. If you need to change something, ask your admin.
@@ -45,8 +58,18 @@ export default async function LeaderInvitePage({ params }: { params: Promise<{ t
           {claims.name ? `Welcome, ${claims.name.split(" ")[0]}` : "Welcome"}
         </h1>
         <p className="mt-2 text-sm text-muted">
-          Tell us about yourself and your group. This takes about 3 minutes. An admin will review your
-          profile before anyone sees it.
+          Tell us about yourself and your group. This takes about 3 minutes. Your profile will be pending
+          until an admin approves it, and nobody sees it before then.
+        </p>
+        <p className="mt-1 text-xs text-muted">
+          This link is open until{" "}
+          {claims.expiresAt.toLocaleString("en-US", {
+            weekday: "short",
+            hour: "numeric",
+            minute: "2-digit",
+            timeZoneName: "short",
+          })}
+          .
         </p>
       </div>
       <LeaderForm
