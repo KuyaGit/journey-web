@@ -39,7 +39,6 @@ const FACEBOOK_NON_PROFILE = new Set([
   "watch",
   "marketplace",
   "sharer",
-  "share",
   "help",
   "settings",
   "notifications",
@@ -62,9 +61,12 @@ export function isFacebookProfileUrl(value: string): boolean {
     return false;
   }
   if (url.protocol !== "https:" || !FACEBOOK_HOST.test(url.hostname.toLowerCase())) return false;
-  const first = url.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
+  const segments = url.pathname.split("/").filter(Boolean);
+  const first = segments[0]?.toLowerCase();
   if (!first) return false;
   if (first === "profile.php") return /^\d+$/.test(url.searchParams.get("id") ?? "");
+  // facebook.com/share/<code>/ is a "Share profile" link; /share/p|r|v|g/... are posts, reels, videos, groups.
+  if (first === "share") return segments.length === 2 && /^[A-Za-z0-9]+$/.test(segments[1]);
   return !FACEBOOK_NON_PROFILE.has(first);
 }
 
