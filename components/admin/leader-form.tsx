@@ -15,6 +15,7 @@ import type { AdminLeader } from "@/lib/hygraph/leaders";
 import type { HumanChallenge } from "@/lib/human-check";
 import { HumanCheck } from "./human-check";
 import { Icon } from "./icons";
+import { LoadingOverlay } from "./loading-overlay";
 import { ImageCropper } from "./image-cropper";
 import { btnGhost, btnPrimary, card, inputCls, labelCls } from "./ui";
 
@@ -392,10 +393,17 @@ export function LeaderForm({
             title={!verified ? "Tick “I'm not a robot” first" : undefined}
             className={btnPrimary}
           >
-            {pending ? (invite ? "Sending…" : "Saving…") : invite ? "Send for review" : "Save draft"}
+            {invite ? "Send for review" : "Save draft"}
           </button>
         </div>
       </div>
+
+      {pending && (
+        <LoadingOverlay
+          label={invite ? "Sending your profile…" : "Saving draft…"}
+          hint="Uploading and saving. This can take a few seconds."
+        />
+      )}
     </form>
   );
 }
