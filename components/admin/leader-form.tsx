@@ -299,7 +299,12 @@ export function LeaderForm({
         </div>
       </Section>
 
-      <Section title="Details" description={invite ? "Optional. Shown on your profile." : "Optional. Shown on the leader's card and profile."}>
+      <Section title="Details" description={
+          invite
+            ? "Facebook is required; the rest is optional. Shown on your profile."
+            : "Facebook is required; the rest is optional. Shown on the leader's card and profile."
+        }
+      >
         <div className="grid gap-5 sm:grid-cols-3">
           {(["hobbies", "interests", "languages"] as const).map((f) => (
             <label key={f} className={labelCls}>
@@ -316,16 +321,28 @@ export function LeaderForm({
         <div className="grid gap-5 sm:grid-cols-3">
           {(
             [
-              ["facebookUrl", "Facebook URL"],
+              ["facebookUrl", "Facebook profile URL *"],
               ["instagramUrl", "Instagram URL"],
               ["twitterUrl", "X / Twitter URL"],
             ] as const
-          ).map(([f, label]) => (
-            <label key={f} className={labelCls}>
-              {label}
-              <input name={f} type="url" placeholder="https://" defaultValue={leader?.[f] ?? ""} className={inputCls} />
-            </label>
-          ))}
+          ).map(([f, label]) => {
+            const fb = f === "facebookUrl";
+            return (
+              <label key={f} className={labelCls}>
+                {label}
+                <input
+                  name={f}
+                  type="url"
+                  placeholder={fb ? "https://facebook.com/yourname" : "https://"}
+                  defaultValue={leader?.[f] ?? ""}
+                  required={fb}
+                  pattern={fb ? "https://((www|m|web|mbasic)\\.)?(facebook|fb)\\.com/.+" : undefined}
+                  title={fb ? "A Facebook profile link, e.g. https://facebook.com/yourname" : undefined}
+                  className={inputCls}
+                />
+              </label>
+            );
+          })}
         </div>
       </Section>
 

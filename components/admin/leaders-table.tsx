@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { AdminLeader } from "@/lib/hygraph/leaders";
 import { unmatchableWarnings } from "@/lib/leaders/matching";
 import { isPending, reviewState, type ReviewState } from "@/lib/leaders/review";
-import { LIFE_STAGES, LIFE_STAGE_LABELS, type LifeStage } from "@/lib/leaders/schema";
+import { LIFE_STAGES, LIFE_STAGE_LABELS, LIFE_STAGE_SHORT as STAGE_SHORT } from "@/lib/leaders/schema";
 import { Avatar } from "./avatar";
 import { Icon } from "./icons";
 import { LeaderModal } from "./leader-modal";
@@ -13,12 +13,6 @@ import { Pill, btnPrimary, card, inputCls } from "./ui";
 
 type Status = "all" | "pending" | "live" | "inactive";
 type SortKey = "name" | "stage" | "members";
-
-const STAGE_SHORT: Record<LifeStage, string> = {
-  anointedProfessional: "Professional",
-  anointedYoungAdult: "Young Adult",
-  anointedYouth: "Youth",
-};
 
 const isPendingLeader = (l: AdminLeader) => isPending(reviewState(l));
 const isActive = (l: AdminLeader) => l.isActive ?? true;

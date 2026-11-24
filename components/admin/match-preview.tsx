@@ -1,12 +1,6 @@
 import { matches, unmatchableWarnings, type MatchableLeader } from "@/lib/leaders/matching";
-import { LIFE_STAGES, type LifeStage } from "@/lib/leaders/schema";
+import { LIFE_STAGES, LIFE_STAGE_SHORT as STAGE_SHORT } from "@/lib/leaders/schema";
 import { Icon } from "./icons";
-
-const STAGE_SHORT: Record<LifeStage, string> = {
-  anointedProfessional: "Professional",
-  anointedYoungAdult: "Young Adult",
-  anointedYouth: "Youth",
-};
 
 const PROFILES = [
   { label: "Male", gender: "male" as const },

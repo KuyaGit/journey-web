@@ -1,7 +1,7 @@
 // Enum API IDs are case sensitive and shared with the mobile app. Do not rename.
 export const GENDERS = ["male", "female", "lgbtqia"] as const;
 export const LIFE_STAGES = [
-  "anointedProfessional",
+  "anointedAdult",
   "anointedYoungAdult",
   "anointedYouth",
 ] as const;
@@ -16,10 +16,57 @@ export const GENDER_LABELS: Record<Gender, string> = {
 };
 
 export const LIFE_STAGE_LABELS: Record<LifeStage, string> = {
-  anointedProfessional: "Anointed Professional (21 and above)",
-  anointedYoungAdult: "Young Adult",
-  anointedYouth: "Anointed Youth",
+  anointedAdult: "Anointed Adult (50+)",
+  anointedYoungAdult: "Anointed Young Adult (23–49)",
+  anointedYouth: "Anointed Youth (22 and below)",
 };
+
+export const LIFE_STAGE_SHORT: Record<LifeStage, string> = {
+  anointedAdult: "Adult",
+  anointedYoungAdult: "Young Adult",
+  anointedYouth: "Youth",
+};
+
+const FACEBOOK_HOST = /^(?:(?:www|m|web|mbasic)\.)?(?:facebook|fb)\.com$/;
+// First path segments that are Facebook pages, not someone's profile.
+const FACEBOOK_NON_PROFILE = new Set([
+  "home.php",
+  "login",
+  "login.php",
+  "groups",
+  "pages",
+  "events",
+  "watch",
+  "marketplace",
+  "sharer",
+  "share",
+  "help",
+  "settings",
+  "notifications",
+  "messages",
+  "friends",
+  "search",
+  "reel",
+  "photo",
+  "photo.php",
+  "story.php",
+  "permalink.php",
+]);
+
+/** True for an https link to a Facebook profile, e.g. facebook.com/name or facebook.com/profile.php?id=123. */
+export function isFacebookProfileUrl(value: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:" || !FACEBOOK_HOST.test(url.hostname.toLowerCase())) return false;
+  const first = url.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
+  if (!first) return false;
+  if (first === "profile.php") return /^\d+$/.test(url.searchParams.get("id") ?? "");
+  return !FACEBOOK_NON_PROFILE.has(first);
+}
 
 export type LeaderInput = {
   name: string;
@@ -86,8 +133,12 @@ export function parseLeaderForm(fd: FormData): ParseResult {
     instagramUrl: String(fd.get("instagramUrl") ?? "").trim(),
     twitterUrl: String(fd.get("twitterUrl") ?? "").trim(),
   };
-  for (const [k, v] of Object.entries(urls)) {
-    if (v && !v.startsWith("https://")) errors.push(`${k} must start with https://`);
+  if (!urls.facebookUrl) errors.push("A Facebook profile link is required.");
+  else if (!isFacebookProfileUrl(urls.facebookUrl)) {
+    errors.push("Enter a valid Facebook profile link, e.g. https://facebook.com/yourname.");
+  }
+  for (const k of ["instagramUrl", "twitterUrl"] as const) {
+    if (urls[k] && !urls[k].startsWith("https://")) errors.push(`${k} must start with https://`);
   }
 
   let memberCount: number | null = null;
