@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   approveAction,
   deleteAction,
@@ -16,6 +16,8 @@ import { GENDER_LABELS, LIFE_STAGE_LABELS } from "@/lib/leaders/schema";
 import { ActionButton } from "./action-button";
 import { Avatar } from "./avatar";
 import { Icon } from "./icons";
+import { LeaderActionForm } from "./leader-action-form";
+import { LoadingOverlay } from "./loading-overlay";
 import { MatchPreview } from "./match-preview";
 import { Pill, btnDanger, btnGhost, btnPrimary, btnRose } from "./ui";
 
@@ -66,6 +68,16 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  // Label of the action waiting on the API (e.g. "Unpublishing…"); null when idle.
+  const [busy, setBusy] = useState<string | null>(null);
+  // Don't let the modal close mid-request: the admin would lose the loading state and result.
+  const busyRef = useRef(false);
+  useEffect(() => {
+    busyRef.current = busy !== null;
+  }, [busy]);
+  const close = useCallback(() => {
+    if (!busyRef.current) onClose();
+  }, [onClose]);
 
   const review = reviewState(leader);
   const isNew = review === "new";
@@ -87,7 +99,7 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
     closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     window.addEventListener("keydown", onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -96,7 +108,7 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
       document.body.style.overflow = overflow;
       previouslyFocused?.focus?.();
     };
-  }, [onClose]);
+  }, [close]);
 
   return (
     <div
@@ -107,7 +119,7 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
     >
       <div
         className="animate-overlay-in absolute inset-0 bg-clay/50 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={close}
         aria-hidden
       />
 
@@ -119,7 +131,8 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
           />
           <button
             ref={closeRef}
-            onClick={onClose}
+            onClick={close}
+            disabled={busy !== null}
             aria-label="Close"
             className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white/20 text-white backdrop-blur transition hover:bg-white/35"
           >
@@ -127,8 +140,8 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-6 sm:px-8">
-          <div className="-mt-12 flex flex-wrap items-end gap-4">
+        <div className="relative z-10 -mt-12 shrink-0 px-6 sm:px-8">
+          <div className="flex flex-wrap items-end gap-4">
             <Avatar
               name={leader.name}
               url={leader.profileImage?.url}
@@ -141,6 +154,9 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
               <p className="font-mono text-xs text-muted">/{leader.slug}</p>
             </div>
           </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 pb-6 sm:px-8">
 
           <div className="mt-4 flex flex-wrap gap-2">
             <Pill tone={isNew ? "amber" : live ? "sage" : "sky"} dot>
@@ -280,40 +296,62 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
                 <button type="button" onClick={() => setConfirmingDelete(false)} className={btnGhost}>
                   Keep
                 </button>
-                <form action={isNew ? rejectAction : deleteAction}>
-                  <input type="hidden" name="id" value={leader.id} />
-                  <ActionButton className={btnDanger} pendingLabel={isNew ? "Rejecting…" : "Deleting…"}>
+                <LeaderActionForm
+                  pendingLabel={isNew ? "Rejecting…" : "Deleting…"}
+                  onPendingChange={setBusy}
+                  action={isNew ? rejectAction : deleteAction}
+                  id={leader.id}
+                  successMessage={isNew ? `${leader.name}'s submission was rejected.` : `${leader.name} was deleted.`}
+                >
+                  <ActionButton className={btnDanger}>
                     <Icon name="trash" /> {isNew ? "Yes, reject" : "Yes, delete"}
                   </ActionButton>
-                </form>
+                </LeaderActionForm>
               </div>
             </div>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
               {!live && (
-                <form action={approveAction}>
-                  <input type="hidden" name="id" value={leader.id} />
-                  <ActionButton className={btnRose} pendingLabel="Publishing…">
+                <LeaderActionForm
+                  pendingLabel="Publishing…"
+                  onPendingChange={setBusy}
+                  action={approveAction}
+                  id={leader.id}
+                  successMessage={`${leader.name} is now live in the app.`}
+                >
+                  <ActionButton className={btnRose}>
                     <Icon name="check" /> Approve &amp; publish
                   </ActionButton>
-                </form>
+                </LeaderActionForm>
               )}
               <Link href={`/admin/leaders/${leader.id}`} className={live ? btnPrimary : btnGhost}>
                 <Icon name="pencil" /> Edit
               </Link>
               {live && (
                 <>
-                  <form action={unpublishAction}>
-                    <input type="hidden" name="id" value={leader.id} />
+                  <LeaderActionForm
+                    pendingLabel="Unpublishing…"
+                    onPendingChange={setBusy}
+                    action={unpublishAction}
+                    id={leader.id}
+                    successMessage={`${leader.name} was unpublished and is hidden from the app.`}
+                  >
                     <ActionButton className={btnGhost}>
                       <Icon name="eyeOff" /> Unpublish
                     </ActionButton>
-                  </form>
-                  <form action={setActiveAction}>
-                    <input type="hidden" name="id" value={leader.id} />
-                    <input type="hidden" name="isActive" value={String(!active)} />
-                    <ActionButton className={btnGhost}>{active ? "Deactivate" : "Activate"}</ActionButton>
-                  </form>
+                  </LeaderActionForm>
+                  <LeaderActionForm
+                    pendingLabel={active ? "Deactivating…" : "Activating…"}
+                    onPendingChange={setBusy}
+                    action={setActiveAction}
+                    id={leader.id}
+                    fields={{ isActive: String(!active) }}
+                    successMessage={active ? `${leader.name} was deactivated.` : `${leader.name} was activated.`}
+                  >
+                    <ActionButton className={btnGhost}>
+                      {active ? "Deactivate" : "Activate"}
+                    </ActionButton>
+                  </LeaderActionForm>
                 </>
               )}
               <button
@@ -326,6 +364,10 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
             </div>
           )}
         </footer>
+
+        {busy && (
+          <LoadingOverlay variant="contained" label={busy} hint="Talking to Hygraph. This can take a few seconds." />
+        )}
       </div>
     </div>
   );

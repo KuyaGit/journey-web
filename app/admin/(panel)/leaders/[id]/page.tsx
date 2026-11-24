@@ -7,6 +7,7 @@ import { LeaderForm } from "@/components/admin/leader-form";
 import { MatchPreview } from "@/components/admin/match-preview";
 import { ActionButton } from "@/components/admin/action-button";
 import { Icon } from "@/components/admin/icons";
+import { LeaderActionForm } from "@/components/admin/leader-action-form";
 import { PageHeader, Pill, btnRose, card } from "@/components/admin/ui";
 import { reviewState } from "@/lib/leaders/review";
 import { approveAction, saveLeader } from "../actions";
@@ -39,12 +40,16 @@ export default async function EditLeaderPage({ params }: { params: Promise<{ id:
                   {active ? "Active" : "Inactive"}
                 </Pill>
                 {review !== "live" && (
-                  <form action={approveAction}>
-                    <input type="hidden" name="id" value={leader.id} />
-                    <ActionButton className={btnRose} pendingLabel="Publishing…">
+                  <LeaderActionForm
+                    action={approveAction}
+                    pendingLabel="Publishing…"
+                    id={leader.id}
+                    successMessage={`${leader.name} is now live in the app.`}
+                  >
+                    <ActionButton className={btnRose}>
                       <Icon name="check" /> Approve &amp; publish
                     </ActionButton>
-                  </form>
+                  </LeaderActionForm>
                 )}
               </div>
             }

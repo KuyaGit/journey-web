@@ -47,10 +47,17 @@ export async function saveLeader(
   redirect("/admin/leaders");
 }
 
-async function run(fn: () => Promise<void>) {
+export type ActionResult = { ok: true } | { ok: false; error: string };
+
+async function run(fn: () => Promise<void>): Promise<ActionResult> {
   await requireAdmin();
-  await fn();
+  try {
+    await fn();
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Something went wrong." };
+  }
   revalidatePath("/admin/leaders");
+  return { ok: true };
 }
 
 async function requireLeader(id: string) {
@@ -61,16 +68,16 @@ async function requireLeader(id: string) {
 
 /** Approve & publish: publishes the contact, the image, then the leader. */
 export async function approveAction(formData: FormData) {
-  await run(() => publishLeader(String(formData.get("id"))));
+  return run(() => publishLeader(String(formData.get("id"))));
 }
 
 export async function unpublishAction(formData: FormData) {
-  await run(() => unpublishLeader(String(formData.get("id"))));
+  return run(() => unpublishLeader(String(formData.get("id"))));
 }
 
 /** Activate/Deactivate publishes the whole draft, so it is only allowed when nothing is pending. */
 export async function setActiveAction(formData: FormData) {
-  await run(async () => {
+  return run(async () => {
     const id = String(formData.get("id"));
     const leader = await requireLeader(id);
     if (reviewState(leader) !== "live") {
@@ -82,7 +89,7 @@ export async function setActiveAction(formData: FormData) {
 
 /** Reject a new submission: removes the draft leader, its contact and its image. */
 export async function rejectAction(formData: FormData) {
-  await run(async () => {
+  return run(async () => {
     const id = String(formData.get("id"));
     const leader = await requireLeader(id);
     if (reviewState(leader) !== "new") throw new Error("Only new submissions can be rejected.");
@@ -91,5 +98,5 @@ export async function rejectAction(formData: FormData) {
 }
 
 export async function deleteAction(formData: FormData) {
-  await run(() => deleteLeader(String(formData.get("id"))));
+  return run(() => deleteLeader(String(formData.get("id"))));
 }
