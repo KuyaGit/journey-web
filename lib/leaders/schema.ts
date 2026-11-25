@@ -41,6 +41,8 @@ export type LifeGroupLeaderOption = {
   gender: Gender | null;
   lifeStages: LifeStage | null;
   imageUrl: string | null;
+  /** Whether this leader already has an (approved) Life Group leader. Yes/no only: the form is public. */
+  hasLifeGroupLeader: boolean;
 };
 
 /**

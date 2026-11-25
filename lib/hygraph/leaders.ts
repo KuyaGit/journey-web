@@ -64,16 +64,25 @@ export async function listLifeGroupLeaderOptions(): Promise<LifeGroupLeaderOptio
   const first = 100;
   for (let skip = 0; ; skip += first) {
     const data = await hygraph<{
-      leaders: (Omit<LifeGroupLeaderOption, "imageUrl"> & { profileImage: { url: string } | null })[];
+      leaders: (Omit<LifeGroupLeaderOption, "imageUrl" | "hasLifeGroupLeader"> & {
+        profileImage: { url: string } | null;
+        lifeGroupLeader: { id: string } | null;
+      })[];
     }>(
       `query($first: Int, $skip: Int) {
         leaders(first: $first, skip: $skip, orderBy: name_ASC, stage: PUBLISHED, where: { isActive: true }) {
-          id name gender lifeStages profileImage { url }
+          id name gender lifeStages profileImage { url } lifeGroupLeader { id }
         }
       }`,
       { first, skip },
     );
-    out.push(...data.leaders.map(({ profileImage, ...l }) => ({ ...l, imageUrl: profileImage?.url ?? null })));
+    out.push(
+      ...data.leaders.map(({ profileImage, lifeGroupLeader, ...l }) => ({
+        ...l,
+        imageUrl: profileImage?.url ?? null,
+        hasLifeGroupLeader: !!lifeGroupLeader,
+      })),
+    );
     if (data.leaders.length < first) return out;
   }
 }

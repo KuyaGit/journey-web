@@ -41,6 +41,8 @@ export function LifeGroupForm({
   const [lglId, setLglId] = useState("");
 
   const self = leaders.find((l) => l.id === selfId) ?? null;
+  // A leader who already has a Life Group leader can't pick another one here: only an admin can change it.
+  const alreadyHas = self?.hasLifeGroupLeader ?? false;
   const lglOptions =
     self?.gender && self.lifeStages
       ? leaders.filter(
@@ -57,7 +59,7 @@ export function LifeGroupForm({
       // Submit via a transition so React 19 doesn't reset the fields after a validation error.
       onSubmit={(e) => {
         e.preventDefault();
-        if (!verified) return;
+        if (!verified || alreadyHas) return;
         const data = new FormData(e.currentTarget);
         startTransition(() => formAction(data));
       }}
@@ -113,30 +115,52 @@ export function LifeGroupForm({
       </Step>
 
       <Step n={2} title="Who is your Life Group leader?">
-        <LeaderPicker
-          name="lifeGroupLeader"
-          label="Your Life Group leader *"
-          options={lglOptions}
-          value={lglValue}
-          onChange={setLglId}
-          disabled={!self}
-          disabledText="Choose your name first"
-          emptyText="No leader matches your gender and life stage yet"
-          hint={
-            self && lglOptions.length === 0
-              ? "No approved leader matches your gender and life stage yet. Ask your admin."
-              : "Leaders of your gender, from your life stage or the one above it."
-          }
-        />
+        {alreadyHas ? (
+          <div role="status" className="rounded-2xl border border-rose/30 bg-rose/10 p-4 text-sm text-rose-deep">
+            <p className="flex items-center gap-2 font-medium">
+              <Icon name="alert" className="h-4 w-4" />
+              You already have a Life Group leader.
+            </p>
+            <p className="mt-1.5 pl-6">
+              Your profile already has a Life Group leader, so there&apos;s nothing to change here. If it&apos;s
+              wrong, please ask your admin.
+            </p>
+          </div>
+        ) : (
+          <LeaderPicker
+            name="lifeGroupLeader"
+            label="Your Life Group leader *"
+            options={lglOptions}
+            value={lglValue}
+            onChange={setLglId}
+            disabled={!self}
+            disabledText="Choose your name first"
+            emptyText="No leader matches your gender and life stage yet"
+            hint={
+              self && lglOptions.length === 0
+                ? "No approved leader matches your gender and life stage yet. Ask your admin."
+                : "Leaders of your gender, from your life stage or the one above it."
+            }
+          />
+        )}
       </Step>
 
-      <HumanCheck request={humanCheck} onChange={setVerified} />
+      {/* Hidden, not unmounted, so its "verified" state stays in sync if they pick a different name. */}
+      <div hidden={alreadyHas}>
+        <HumanCheck request={humanCheck} onChange={setVerified} />
+      </div>
 
       <div className="flex items-center justify-between gap-3 rounded-2xl border border-sand bg-white/90 p-3 pl-5 shadow-[0_12px_40px_-12px_rgba(59,42,32,0.35)]">
         <p className="hidden text-sm text-muted sm:block">An admin approves the change before it&apos;s saved.</p>
         <button
-          disabled={pending || !verified}
-          title={!verified ? "Tick “I'm not a robot” first" : undefined}
+          disabled={pending || !verified || alreadyHas}
+          title={
+            alreadyHas
+              ? "You already have a Life Group leader"
+              : !verified
+                ? "Tick “I'm not a robot” first"
+                : undefined
+          }
           className={`${btnPrimary} ml-auto`}
         >
           Send

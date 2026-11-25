@@ -16,6 +16,7 @@ const wrongEmail = createLimiter({ max: 5, windowMs: 60 * 60 * 1000 });
 
 const EMAIL_MISMATCH =
   "That email doesn't match the profile you chose. Use the email you gave when you registered as a leader.";
+const ALREADY_HAS = "You already have a Life Group leader. If it's wrong, please ask your admin.";
 
 /**
  * Public action. The invite token is the credential, and the leader proves who they are with the email on
@@ -63,6 +64,9 @@ export async function submitLifeGroupLeader(token: string, _prev: SaveState, for
       return { errors: [EMAIL_MISMATCH] };
     }
     wrongEmail.reset(selfId);
+
+    // Read from the DRAFT, so this also blocks a second try while an earlier choice awaits approval.
+    if (profile.lifeGroupLeader) return { errors: [ALREADY_HAS] };
 
     const chosen = options.find((o) => o.id === lglId);
     if (
