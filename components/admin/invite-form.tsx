@@ -210,6 +210,57 @@ export function InviteForm() {
         </section>
       )}
 
+      {result && expiresAt && (
+        <section className={`${card} animate-fade-up space-y-4 p-5 sm:p-6`}>
+          <div>
+            <h2 className="font-display text-xl text-clay">Life Group leader link</h2>
+            <p className="text-sm text-muted">
+              For leaders who are already approved: they find their name, confirm their email and choose their
+              own Life Group leader. Same expiry as the invite above. Changes wait for your approval.
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+            <div
+              className={`h-36 w-36 shrink-0 rounded-xl border border-sand bg-white p-1 [&>svg]:h-full [&>svg]:w-full ${
+                expired ? "opacity-20 blur-[1px]" : ""
+              }`}
+              role="img"
+              aria-label="QR code for the Life Group leader link"
+              // The SVG is generated on the server from our own link by the qrcode library.
+              dangerouslySetInnerHTML={{ __html: result.lifeGroupSvg }}
+            />
+            <div className="min-w-0 flex-1 space-y-4">
+              <div
+                className={`break-all rounded-xl border border-sand bg-cream px-3.5 py-3 font-mono text-xs text-clay ${
+                  expired ? "line-through opacity-50" : ""
+                }`}
+              >
+                {result.lifeGroupLink}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {expired ? (
+                  <span className={`${btnGhost} pointer-events-none opacity-60`} aria-disabled="true">
+                    <Icon name="download" /> Download QR
+                  </span>
+                ) : (
+                  <a href={result.lifeGroupPng} download="journey-life-group-leader.png" className={btnGhost}>
+                    <Icon name="download" /> Download QR
+                  </a>
+                )}
+                <CopyButton value={result.lifeGroupLink} label="Copy link" disabled={expired} />
+                <CopyButton
+                  value={`Hi! Please choose your Life Group leader using this link. It expires on ${formatExpiry(
+                    expiresAt,
+                  )}:\n${result.lifeGroupLink}`}
+                  label="Copy message"
+                  disabled={expired}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {full && result && expiresAt && !expired && (
         <FullScreenQr svg={result.svg} expiresAt={expiresAt} onClose={() => setFull(false)} />
       )}

@@ -65,7 +65,31 @@ function CopyButton({ value, label }: { value: string; label: string }) {
   );
 }
 
-export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose: () => void }) {
+function LeaderLink({ id, name, onSelect }: { id: string; name: string; onSelect: (id: string) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(id)}
+      className="rounded-full bg-sand px-2.5 py-1 text-xs text-clay transition hover:bg-clay hover:text-cream"
+    >
+      {name}
+    </button>
+  );
+}
+
+export function LeaderModal({
+  leader,
+  members,
+  onSelect,
+  onClose,
+}: {
+  leader: AdminLeader;
+  /** Leaders who chose this leader as their Life Group leader. */
+  members: AdminLeader[];
+  /** Opens another leader's details (used by the Life Group leader and member names). */
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   // Label of the action waiting on the API (e.g. "Unpublishing…"); null when idle.
@@ -195,8 +219,29 @@ export function LeaderModal({ leader, onClose }: { leader: AdminLeader; onClose:
                 <Field label="Supports">
                   <Chips items={leader.supportedGenders.map((g) => GENDER_LABELS[g])} />
                 </Field>
-                <Field label="Members">{leader.memberCount ?? <span className="text-muted/60">Not set</span>}</Field>
                 <Field label="Accepts LGBT">{leader.acceptsLgbt ? "Yes" : "No"}</Field>
+                <div className="col-span-2">
+                  <Field label="Life Group leader">
+                    {leader.lifeGroupLeader ? (
+                      <LeaderLink {...leader.lifeGroupLeader} onSelect={onSelect} />
+                    ) : (
+                      <span className="text-muted/60">Not set</span>
+                    )}
+                  </Field>
+                </div>
+                <div className="col-span-2">
+                  <Field label={`Members (${members.length})`}>
+                    {members.length ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {members.map((m) => (
+                          <LeaderLink key={m.id} id={m.id} name={m.name} onSelect={onSelect} />
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-muted/60">No members yet</span>
+                    )}
+                  </Field>
+                </div>
                 <Field label="Languages">
                   <Chips items={leader.languages} />
                 </Field>

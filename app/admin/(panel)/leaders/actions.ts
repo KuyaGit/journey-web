@@ -13,6 +13,7 @@ import {
   updateLeader,
 } from "@/lib/hygraph/leaders";
 import { uploadFormImage } from "@/lib/leaders/image";
+import { lifeGroupLeaderError } from "@/lib/leaders/life-group";
 import { reviewState } from "@/lib/leaders/review";
 import { parseLeaderForm } from "@/lib/leaders/schema";
 
@@ -31,6 +32,9 @@ export async function saveLeader(
   if (!parsed.ok) return { errors: parsed.errors };
 
   try {
+    const lglError = await lifeGroupLeaderError(parsed.value, id);
+    if (lglError) return { errors: [lglError] };
+
     const { imageId, error } = await uploadFormImage(formData);
     if (error) return { errors: [error] };
 

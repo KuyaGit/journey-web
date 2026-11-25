@@ -8,6 +8,7 @@ import { contactEmailExists, createLeader } from "@/lib/hygraph/leaders";
 import { issueHumanCheck, verifyHumanCheck, type HumanChallenge } from "@/lib/human-check";
 import { verifyInvite } from "@/lib/invites/token";
 import { uploadFormImage } from "@/lib/leaders/image";
+import { lifeGroupLeaderError } from "@/lib/leaders/life-group";
 import { parseLeaderForm, slugify } from "@/lib/leaders/schema";
 import { clientIp, createLimiter } from "@/lib/rate-limit";
 
@@ -76,6 +77,9 @@ export async function submitInvite(token: string, _prev: SaveState, formData: Fo
         ],
       };
     }
+
+    const lglError = await lifeGroupLeaderError(parsed.value, null);
+    if (lglError) return { errors: [lglError] };
 
     const { imageId, error } = await uploadFormImage(formData);
     if (error) return { errors: [error] };

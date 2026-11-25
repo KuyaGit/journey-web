@@ -1,6 +1,6 @@
 import "server-only";
 import { hygraph } from "./client";
-import type { Gender, LeaderInput, LifeStage } from "@/lib/leaders/schema";
+import type { Gender, LeaderInput, LifeGroupLeaderOption, LifeStage } from "@/lib/leaders/schema";
 
 // Mutation/publish argument names follow Hygraph's generated schema. Verify in the API Playground.
 
@@ -12,6 +12,8 @@ export type AdminLeader = {
   gender: Gender | null;
   supportedGenders: Gender[];
   lifeStages: LifeStage | null;
+  /** This leader's own Life Group leader (Hygraph reference field `lifeGroupLeader` -> Leader). */
+  lifeGroupLeader: { id: string; name: string } | null;
   acceptsLgbt: boolean | null;
   isActive: boolean | null;
   facebookUrl: string | null;
@@ -29,6 +31,7 @@ export type AdminLeader = {
 
 const FIELDS = `
   id name slug shortBio gender supportedGenders lifeStages
+  lifeGroupLeader { id name }
   acceptsLgbt isActive facebookUrl instagramUrl twitterUrl hobbies interests languages
   memberCount
   profileImage { id url }
@@ -52,6 +55,29 @@ export async function listLeaders(): Promise<AdminLeader[]> {
   }
 }
 
+/**
+ * Leaders that can be picked as a Life Group leader: approved (published) and active.
+ * Public fields only, because the invite form is public.
+ */
+export async function listLifeGroupLeaderOptions(): Promise<LifeGroupLeaderOption[]> {
+  const out: LifeGroupLeaderOption[] = [];
+  const first = 100;
+  for (let skip = 0; ; skip += first) {
+    const data = await hygraph<{
+      leaders: (Omit<LifeGroupLeaderOption, "imageUrl"> & { profileImage: { url: string } | null })[];
+    }>(
+      `query($first: Int, $skip: Int) {
+        leaders(first: $first, skip: $skip, orderBy: name_ASC, stage: PUBLISHED, where: { isActive: true }) {
+          id name gender lifeStages profileImage { url }
+        }
+      }`,
+      { first, skip },
+    );
+    out.push(...data.leaders.map(({ profileImage, ...l }) => ({ ...l, imageUrl: profileImage?.url ?? null })));
+    if (data.leaders.length < first) return out;
+  }
+}
+
 export async function getLeader(id: string): Promise<AdminLeader | null> {
   const data = await hygraph<{ leader: AdminLeader | null }>(
     `query($id: ID!) { leader(where: { id: $id }, stage: DRAFT) { ${FIELDS} } }`,
@@ -68,6 +94,8 @@ function leaderData(v: LeaderInput, imageId: string | null) {
     gender: v.gender,
     supportedGenders: v.supportedGenders,
     lifeStages: v.lifeStages,
+    // Single reference: `connect` replaces the previous Life Group leader on update.
+    lifeGroupLeader: { connect: { id: v.lifeGroupLeaderId } },
     acceptsLgbt: v.acceptsLgbt,
     isActive: v.isActive,
     facebookUrl: v.facebookUrl || null,
@@ -112,6 +140,16 @@ export async function updateLeader(
           : { create: contact },
       },
     },
+  );
+}
+
+/** Sets only the Life Group leader, on the DRAFT. It reaches the published copy when an admin approves. */
+export async function setLifeGroupLeader(id: string, lifeGroupLeaderId: string): Promise<void> {
+  await hygraph(
+    `mutation($id: ID!, $lgl: ID!) {
+      updateLeader(where: { id: $id }, data: { lifeGroupLeader: { connect: { id: $lgl } } }) { id }
+    }`,
+    { id, lgl: lifeGroupLeaderId },
   );
 }
 

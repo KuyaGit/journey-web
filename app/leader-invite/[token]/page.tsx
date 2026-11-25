@@ -1,7 +1,7 @@
 import { LeaderForm } from "@/components/admin/leader-form";
 import { Icon, type IconName } from "@/components/admin/icons";
 import { card } from "@/components/admin/ui";
-import { contactEmailExists } from "@/lib/hygraph/leaders";
+import { contactEmailExists, listLifeGroupLeaderOptions } from "@/lib/hygraph/leaders";
 import { verifyInvite } from "@/lib/invites/token";
 import { requestHumanCheck, submitInvite } from "./actions";
 
@@ -50,6 +50,8 @@ export default async function LeaderInvitePage({ params }: { params: Promise<{ t
     );
   }
 
+  const lifeGroupLeaders = await listLifeGroupLeaderOptions();
+
   return (
     <div className="space-y-8">
       <div>
@@ -78,6 +80,7 @@ export default async function LeaderInvitePage({ params }: { params: Promise<{ t
         initialName={claims.name}
         action={submitInvite.bind(null, token)}
         humanCheck={requestHumanCheck.bind(null, token)}
+        lifeGroupLeaders={lifeGroupLeaders}
       />
     </div>
   );

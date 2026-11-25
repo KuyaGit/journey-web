@@ -278,7 +278,15 @@ export function LeadersTable({ leaders }: { leaders: AdminLeader[] }) {
         Showing {rows.length} of {leaders.length} · Click a row for details
       </div>
 
-      {selected && <LeaderModal key={selected.id} leader={selected} onClose={closeModal} />}
+      {selected && (
+        <LeaderModal
+          key={selected.id}
+          leader={selected}
+          members={leaders.filter((l) => l.lifeGroupLeader?.id === selected.id)}
+          onSelect={setSelectedId}
+          onClose={closeModal}
+        />
+      )}
     </section>
   );
 }
