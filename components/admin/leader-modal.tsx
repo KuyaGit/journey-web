@@ -11,6 +11,7 @@ import {
 } from "@/app/admin/(panel)/leaders/actions";
 import type { AdminLeader } from "@/lib/hygraph/leaders";
 import { unmatchableWarnings } from "@/lib/leaders/matching";
+import { pendingChanges } from "@/lib/leaders/changes";
 import { reviewState } from "@/lib/leaders/review";
 import { GENDER_LABELS, LIFE_STAGE_LABELS } from "@/lib/leaders/schema";
 import { ActionButton } from "./action-button";
@@ -19,6 +20,7 @@ import { Icon } from "./icons";
 import { LeaderActionForm } from "./leader-action-form";
 import { LoadingOverlay } from "./loading-overlay";
 import { MatchPreview } from "./match-preview";
+import { PendingChanges } from "./pending-changes";
 import { Pill, btnDanger, btnGhost, btnPrimary, btnRose } from "./ui";
 
 function Chips({ items }: { items: string[] }) {
@@ -102,6 +104,14 @@ export function LeaderModal({
   const close = useCallback(() => {
     if (!busyRef.current) onClose();
   }, [onClose]);
+  // Large view of the profile photo. Keyed by URL, so it closes on its own when another leader opens.
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const photo = leader.profileImage?.url ?? null;
+  const photoOpen = photoUrl !== null && photoUrl === photo;
+  const photoOpenRef = useRef(false);
+  useEffect(() => {
+    photoOpenRef.current = photoOpen;
+  }, [photoOpen]);
 
   const review = reviewState(leader);
   const isNew = review === "new";
@@ -123,7 +133,12 @@ export function LeaderModal({
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
     closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    // Escape closes the large photo first, then the modal.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (photoOpenRef.current) setPhotoUrl(null);
+      else close();
+    };
     window.addEventListener("keydown", onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -166,11 +181,30 @@ export function LeaderModal({
 
         <div className="relative z-10 -mt-12 shrink-0 px-6 sm:px-8">
           <div className="flex flex-wrap items-end gap-4">
-            <Avatar
-              name={leader.name}
-              url={leader.profileImage?.url}
-              className="h-24 w-24 rounded-2xl text-3xl ring-4 ring-cream shadow-lg"
-            />
+            {photo ? (
+              <button
+                type="button"
+                onClick={() => setPhotoUrl(photo)}
+                aria-label={`View ${leader.name}'s photo`}
+                title="View photo"
+                className="group relative shrink-0 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-rose/30"
+              >
+                <Avatar
+                  name={leader.name}
+                  url={photo}
+                  className="h-24 w-24 rounded-2xl text-3xl ring-4 ring-cream shadow-lg transition group-hover:brightness-90"
+                />
+                <span className="pointer-events-none absolute inset-0 grid place-items-center rounded-2xl opacity-0 transition group-hover:opacity-100">
+                  <Icon name="search" className="h-6 w-6 text-white drop-shadow" />
+                </span>
+              </button>
+            ) : (
+              <Avatar
+                name={leader.name}
+                url={null}
+                className="h-24 w-24 rounded-2xl text-3xl ring-4 ring-cream shadow-lg"
+              />
+            )}
             <div className="min-w-0 flex-1 pb-1">
               <h2 id="leader-modal-title" className="truncate font-display text-2xl tracking-tight text-clay">
                 {leader.name}
@@ -203,6 +237,12 @@ export function LeaderModal({
                 ? "New submission. Nobody can see this in the app yet. Review the details, then approve to publish or reject to remove it."
                 : "These edits aren't live yet. The app still shows the last approved version until you approve."}
             </p>
+          )}
+
+          {review === "changes" && (
+            <div className="mt-4">
+              <PendingChanges changes={pendingChanges(leader)} />
+            </div>
           )}
 
           <div className="mt-6 grid gap-6 md:grid-cols-5">
@@ -414,6 +454,36 @@ export function LeaderModal({
           <LoadingOverlay variant="contained" label={busy} hint="Talking to Hygraph. This can take a few seconds." />
         )}
       </div>
+
+      {photoOpen && photo && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${leader.name}'s photo`}
+          className="animate-overlay-in fixed inset-0 z-[60] flex items-center justify-center bg-clay/85 p-4 backdrop-blur-sm sm:p-8"
+          onClick={() => setPhotoUrl(null)}
+        >
+          <button
+            type="button"
+            autoFocus
+            onClick={() => setPhotoUrl(null)}
+            aria-label="Close photo"
+            className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/20 text-white backdrop-blur transition hover:bg-white/35"
+          >
+            <Icon name="x" />
+          </button>
+          <figure className="animate-pop-in flex max-h-full max-w-full flex-col items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element -- Hygraph CDN image at full size */}
+            <img
+              src={photo}
+              alt={`${leader.name}'s photo`}
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[80vh] max-w-full rounded-2xl object-contain shadow-2xl ring-1 ring-white/10"
+            />
+            <figcaption className="text-sm font-medium text-white/90">{leader.name}</figcaption>
+          </figure>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,10 +11,12 @@ import { Icon } from "./icons";
 import { LeaderModal } from "./leader-modal";
 import { Pill, btnPrimary, card, inputCls } from "./ui";
 
-type Status = "all" | "pending" | "live" | "inactive";
+type Status = "all" | "pending" | "changes" | "live" | "inactive";
 type SortKey = "name" | "stage" | "members";
 
 const isPendingLeader = (l: AdminLeader) => isPending(reviewState(l));
+// Already live, with edits waiting for approval (not new submissions).
+const hasPendingChanges = (l: AdminLeader) => reviewState(l) === "changes";
 const isActive = (l: AdminLeader) => l.isActive ?? true;
 
 const REVIEW_PILL: Record<ReviewState, { tone: "amber" | "sky" | "sage"; label: string }> = {
@@ -67,6 +69,7 @@ export function LeadersTable({ leaders }: { leaders: AdminLeader[] }) {
     () => ({
       all: leaders.length,
       pending: leaders.filter(isPendingLeader).length,
+      changes: leaders.filter(hasPendingChanges).length,
       live: leaders.filter((l) => !isPendingLeader(l)).length,
       inactive: leaders.filter((l) => !isActive(l)).length,
     }),
@@ -79,6 +82,7 @@ export function LeadersTable({ leaders }: { leaders: AdminLeader[] }) {
       if (needle && !`${l.name} ${l.slug}`.toLowerCase().includes(needle)) return false;
       if (stage && l.lifeStages !== stage) return false;
       if (status === "pending" && !isPendingLeader(l)) return false;
+      if (status === "changes" && !hasPendingChanges(l)) return false;
       if (status === "live" && isPendingLeader(l)) return false;
       if (status === "inactive" && isActive(l)) return false;
       return true;
@@ -105,6 +109,7 @@ export function LeadersTable({ leaders }: { leaders: AdminLeader[] }) {
   const chips: { id: Status; label: string }[] = [
     { id: "all", label: "All" },
     { id: "pending", label: "Pending review" },
+    { id: "changes", label: "Changes pending" },
     { id: "live", label: "Live" },
     { id: "inactive", label: "Inactive" },
   ];
@@ -136,7 +141,7 @@ export function LeadersTable({ leaders }: { leaders: AdminLeader[] }) {
             </option>
           ))}
         </select>
-        <div role="group" aria-label="Filter by status" className="flex rounded-xl bg-sand p-1">
+        <div role="group" aria-label="Filter by status" className="flex flex-wrap rounded-xl bg-sand p-1">
           {chips.map((c) => (
             <button
               key={c.id}

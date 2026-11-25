@@ -26,18 +26,29 @@ export type AdminLeader = {
   profileImage: { id: string; url: string } | null;
   leaderContact: { id: string; email: string; phone: string | null } | null;
   updatedAt: string;
-  documentInStages: { id: string; updatedAt: string }[];
+  /** The published (approved) copy, if any. Compared with the draft to show pending changes. */
+  documentInStages: PublishedLeader[];
 };
 
-const FIELDS = `
-  id name slug shortBio gender supportedGenders lifeStages
+/** The fields an admin can change, as they are on the published copy. */
+export type PublishedLeader = { id: string; updatedAt: string } & Omit<
+  AdminLeader,
+  "id" | "updatedAt" | "documentInStages"
+>;
+
+const CONTENT_FIELDS = `
+  name slug shortBio gender supportedGenders lifeStages
   lifeGroupLeader { id name }
   acceptsLgbt isActive facebookUrl instagramUrl twitterUrl hobbies interests languages
   memberCount
   profileImage { id url }
   leaderContact { id email phone }
+`;
+
+const FIELDS = `
+  id ${CONTENT_FIELDS}
   updatedAt
-  documentInStages(stages: PUBLISHED) { id updatedAt }
+  documentInStages(stages: PUBLISHED) { id updatedAt ${CONTENT_FIELDS} }
 `;
 
 export async function listLeaders(): Promise<AdminLeader[]> {

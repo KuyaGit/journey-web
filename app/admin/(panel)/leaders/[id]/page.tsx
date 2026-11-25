@@ -9,6 +9,8 @@ import { ActionButton } from "@/components/admin/action-button";
 import { Icon } from "@/components/admin/icons";
 import { LeaderActionForm } from "@/components/admin/leader-action-form";
 import { PageHeader, Pill, btnRose, card } from "@/components/admin/ui";
+import { PendingChanges } from "@/components/admin/pending-changes";
+import { pendingChanges } from "@/lib/leaders/changes";
 import { reviewState } from "@/lib/leaders/review";
 import { approveAction, saveLeader } from "../actions";
 
@@ -56,6 +58,8 @@ export default async function EditLeaderPage({ params }: { params: Promise<{ id:
           />
         </div>
       </div>
+
+      {review === "changes" && <PendingChanges changes={pendingChanges(leader)} />}
 
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <LeaderForm
