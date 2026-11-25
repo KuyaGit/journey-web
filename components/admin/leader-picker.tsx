@@ -31,6 +31,7 @@ export function LeaderPicker({
   disabledText,
   emptyText = "No leaders to choose yet",
   hint,
+  clearable = false,
 }: {
   name: string;
   label: string;
@@ -43,6 +44,8 @@ export function LeaderPicker({
   disabledText?: string;
   emptyText?: string;
   hint?: React.ReactNode;
+  /** Shows a "Clear" button when a leader is chosen, for fields that are optional. */
+  clearable?: boolean;
 }) {
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -122,9 +125,23 @@ export function LeaderPicker({
   return (
     <div ref={rootRef} className="relative">
       <input type="hidden" name={name} value={value} />
-      <span id={`${id}-label`} className="block text-sm font-medium text-clay">
-        {label}
-      </span>
+      <div className="flex items-baseline justify-between gap-3">
+        <span id={`${id}-label`} className="block text-sm font-medium text-clay">
+          {label}
+        </span>
+        {clearable && selected && !isDisabled && (
+          <button
+            type="button"
+            onClick={() => {
+              onChange("");
+              setOpen(false);
+            }}
+            className="text-xs font-medium text-muted underline-offset-2 hover:text-rose-deep hover:underline"
+          >
+            Clear
+          </button>
+        )}
+      </div>
 
       {/* Closed state: shows the chosen leader, or the placeholder. */}
       <button

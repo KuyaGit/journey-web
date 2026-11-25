@@ -103,8 +103,6 @@ function leaderData(v: LeaderInput, imageId: string | null) {
     gender: v.gender,
     supportedGenders: v.supportedGenders,
     lifeStages: v.lifeStages,
-    // Single reference: `connect` replaces the previous Life Group leader on update.
-    lifeGroupLeader: { connect: { id: v.lifeGroupLeaderId } },
     acceptsLgbt: v.acceptsLgbt,
     isActive: v.isActive,
     facebookUrl: v.facebookUrl || null,
@@ -124,6 +122,7 @@ export async function createLeader(v: LeaderInput, imageId: string | null): Prom
     {
       data: {
         ...leaderData(v, imageId),
+        ...(v.lifeGroupLeaderId ? { lifeGroupLeader: { connect: { id: v.lifeGroupLeaderId } } } : {}),
         leaderContact: { create: { email: v.email, phone: v.phone || null } },
       },
     },
@@ -138,12 +137,18 @@ export async function updateLeader(
   existingContactId: string | null,
 ): Promise<void> {
   const contact = { email: v.email, phone: v.phone || null };
+  // Single reference: `connect` replaces the previous Life Group leader. When it's left empty, disconnect
+  // only if one is set now, since there is nothing to disconnect otherwise.
+  let lifeGroupLeader: object | undefined;
+  if (v.lifeGroupLeaderId) lifeGroupLeader = { connect: { id: v.lifeGroupLeaderId } };
+  else if ((await getLeader(id))?.lifeGroupLeader) lifeGroupLeader = { disconnect: true };
   await hygraph(
     `mutation($id: ID!, $data: LeaderUpdateInput!) { updateLeader(where: { id: $id }, data: $data) { id } }`,
     {
       id,
       data: {
         ...leaderData(v, imageId),
+        ...(lifeGroupLeader ? { lifeGroupLeader } : {}),
         leaderContact: existingContactId
           ? { update: { where: { id: existingContactId }, data: contact } }
           : { create: contact },

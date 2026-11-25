@@ -296,16 +296,21 @@ export function LeaderForm({
 
         <LeaderPicker
           name="lifeGroupLeader"
-          label={invite ? "Your Life Group leader *" : "Life Group leader *"}
+          label={invite ? "Your Life Group leader *" : "Life Group leader (optional)"}
+          clearable={!invite}
           options={lglOptions}
           value={lglValue}
           onChange={setLglId}
           disabled={!gender || !stage}
           disabledText={`Choose ${invite ? "your" : "the"} gender and life stage first`}
           hint={
-            gender && stage && lglOptions.length === 0
-              ? `No approved leader matches ${invite ? "your" : "this"} gender and life stage yet. Ask your admin.`
-              : `The leader of ${invite ? "your" : "their"} own Life Group, from ${invite ? "your" : "their"} life stage or the one above it.`
+            !invite && lglId && !lglValue && gender && stage
+              ? "The previous Life Group leader doesn't match this gender and life stage, so it will be removed when you save."
+              : gender && stage && lglOptions.length === 0
+                ? `No approved leader matches ${invite ? "your" : "this"} gender and life stage yet.${invite ? " Ask your admin." : " Leave it empty for now."}`
+                : invite
+                  ? "The leader of your own Life Group, from your life stage or the one above it."
+                  : "The leader of their own Life Group, from their life stage or the one above it. Leave empty if they don't have one yet."
           }
         />
 

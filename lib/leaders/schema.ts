@@ -112,7 +112,7 @@ export type LeaderInput = {
   /** Always `[gender]`: a leader serves their own gender. Set by the server, never posted. */
   supportedGenders: Gender[];
   lifeStages: LifeStage;
-  /** Id of this leader's own Life Group leader. Checked against the rules in the save actions. */
+  /** Id of this leader's own Life Group leader, or "" for none. Checked against the rules in the save actions. */
   lifeGroupLeaderId: string;
   acceptsLgbt: boolean;
   isActive: boolean;
@@ -149,7 +149,10 @@ export type ParseResult =
   | { ok: true; value: LeaderInput }
   | { ok: false; errors: string[] };
 
-export function parseLeaderForm(fd: FormData): ParseResult {
+export function parseLeaderForm(
+  fd: FormData,
+  { requireLifeGroupLeader = true }: { requireLifeGroupLeader?: boolean } = {},
+): ParseResult {
   const errors: string[] = [];
   const name = String(fd.get("name") ?? "").trim();
   const slug = slugify(String(fd.get("slug") ?? "") || name);
@@ -166,7 +169,7 @@ export function parseLeaderForm(fd: FormData): ParseResult {
   else if (!isGender(genderRaw)) errors.push("Invalid gender.");
   if (!stageRaw) errors.push("Please choose your life stage.");
   else if (!isStage(stageRaw)) errors.push("Invalid life stage.");
-  if (!lifeGroupLeaderId) errors.push("Please choose your Life Group leader.");
+  if (requireLifeGroupLeader && !lifeGroupLeaderId) errors.push("Please choose your Life Group leader.");
 
   const urls = {
     facebookUrl: String(fd.get("facebookUrl") ?? "").trim(),

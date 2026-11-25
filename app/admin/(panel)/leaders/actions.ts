@@ -28,7 +28,8 @@ export async function saveLeader(
 ): Promise<SaveState> {
   await requireAdmin();
 
-  const parsed = parseLeaderForm(formData);
+  // Admins can save a leader without a Life Group leader; the public invite form still requires one.
+  const parsed = parseLeaderForm(formData, { requireLifeGroupLeader: false });
   if (!parsed.ok) return { errors: parsed.errors };
 
   try {
