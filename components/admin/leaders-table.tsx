@@ -76,6 +76,16 @@ export function LeadersTable({ leaders }: { leaders: AdminLeader[] }) {
     [leaders],
   );
 
+  // Members are leaders who picked this person as their Life Group leader (same source as the modal).
+  const memberCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const l of leaders) {
+      const id = l.lifeGroupLeader?.id;
+      if (id) m.set(id, (m.get(id) ?? 0) + 1);
+    }
+    return m;
+  }, [leaders]);
+
   const rows = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const filtered = leaders.filter((l) => {
@@ -94,10 +104,10 @@ export function LeadersTable({ leaders }: { leaders: AdminLeader[] }) {
           ? a.name.localeCompare(b.name)
           : sort.key === "stage"
             ? stageIdx(a) - stageIdx(b)
-            : (a.memberCount ?? -1) - (b.memberCount ?? -1);
+            : (memberCounts.get(a.id) ?? 0) - (memberCounts.get(b.id) ?? 0);
       return (cmp || a.name.localeCompare(b.name)) * sort.dir;
     });
-  }, [leaders, q, status, stage, sort]);
+  }, [leaders, memberCounts, q, status, stage, sort]);
 
   const selected = leaders.find((l) => l.id === selectedId) ?? null;
   const filtersOn = q !== "" || status !== "all" || stage !== "";
@@ -233,7 +243,7 @@ export function LeadersTable({ leaders }: { leaders: AdminLeader[] }) {
                       {!active && <Pill tone="muted">Inactive</Pill>}
                     </div>
                   </td>
-                  <td className="hidden px-4 py-3 tabular-nums text-muted md:table-cell">{l.memberCount ?? "–"}</td>
+                  <td className="hidden px-4 py-3 tabular-nums text-muted md:table-cell">{memberCounts.get(l.id) ?? "–"}</td>
                   <td className="px-4 py-3 text-right text-muted/50 transition group-hover:translate-x-0.5 group-hover:text-rose-deep">
                     <Icon name="chevron" />
                   </td>
