@@ -30,7 +30,7 @@ export function LifeGroupForm({
   action,
   humanCheck,
 }: {
-  /** Approved, active leaders: both "who are you" and the Life Group leader come from this list. */
+  /** Approved leaders (active or not): both "who are you" and the Life Group leader come from this list. */
   leaders: LifeGroupLeaderOption[];
   action: (prev: SaveState, fd: FormData) => Promise<SaveState>;
   humanCheck: () => Promise<HumanChallenge | null>;

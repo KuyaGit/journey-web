@@ -56,7 +56,8 @@ export async function listLeaders(): Promise<AdminLeader[]> {
 }
 
 /**
- * Leaders that can be picked as a Life Group leader: approved (published) and active.
+ * Leaders that can be picked as a Life Group leader: approved (published), active or not. "Active" only
+ * decides whether a leader shows in the app for new members; an inactive leader still leads their Life Group.
  * Public fields only, because the invite form is public.
  */
 export async function listLifeGroupLeaderOptions(): Promise<LifeGroupLeaderOption[]> {
@@ -70,7 +71,7 @@ export async function listLifeGroupLeaderOptions(): Promise<LifeGroupLeaderOptio
       })[];
     }>(
       `query($first: Int, $skip: Int) {
-        leaders(first: $first, skip: $skip, orderBy: name_ASC, stage: PUBLISHED, where: { isActive: true }) {
+        leaders(first: $first, skip: $skip, orderBy: name_ASC, stage: PUBLISHED) {
           id name gender lifeStages profileImage { url } lifeGroupLeader { id }
         }
       }`,

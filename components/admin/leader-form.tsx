@@ -32,7 +32,7 @@ type Props = {
   initialName?: string;
   /** When set, the submit button stays disabled until the visitor passes the "I'm not a robot" check. */
   humanCheck?: () => Promise<HumanChallenge | null>;
-  /** Approved, active leaders. Filtered here by the chosen gender and life stage. */
+  /** Approved leaders (active or not). Filtered here by the chosen gender and life stage. */
   lifeGroupLeaders: LifeGroupLeaderOption[];
 };
 
@@ -332,7 +332,7 @@ export function LeaderForm({
             <Toggle
               name="isActive"
               label="Active"
-              hint="Turn off to hide this leader everywhere."
+              hint="Turn off to hide this leader from the app. They can still be chosen as a Life Group leader."
               defaultChecked={leader?.isActive ?? true}
             />
           )}
