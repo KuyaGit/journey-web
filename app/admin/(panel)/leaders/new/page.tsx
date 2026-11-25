@@ -2,10 +2,12 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/dal";
 import { LeaderForm } from "@/components/admin/leader-form";
 import { PageHeader } from "@/components/admin/ui";
+import { listLifeGroupLeaderOptions } from "@/lib/hygraph/leaders";
 import { saveLeader } from "../actions";
 
 export default async function NewLeaderPage() {
   await requireAdmin();
+  const lifeGroupLeaders = await listLifeGroupLeaderOptions();
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div>
@@ -20,7 +22,7 @@ export default async function NewLeaderPage() {
           />
         </div>
       </div>
-      <LeaderForm action={saveLeader.bind(null, null, null)} />
+      <LeaderForm action={saveLeader.bind(null, null, null)} lifeGroupLeaders={lifeGroupLeaders} />
     </div>
   );
 }

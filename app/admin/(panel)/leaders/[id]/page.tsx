@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/dal";
-import { getLeader } from "@/lib/hygraph/leaders";
+import { getLeader, listLifeGroupLeaderOptions } from "@/lib/hygraph/leaders";
 import { Avatar } from "@/components/admin/avatar";
 import { LeaderForm } from "@/components/admin/leader-form";
 import { MatchPreview } from "@/components/admin/match-preview";
@@ -15,7 +15,7 @@ import { approveAction, saveLeader } from "../actions";
 export default async function EditLeaderPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  const leader = await getLeader(id);
+  const [leader, lifeGroupLeaders] = await Promise.all([getLeader(id), listLifeGroupLeaderOptions()]);
   if (!leader) notFound();
 
   const review = reviewState(leader);
@@ -61,6 +61,7 @@ export default async function EditLeaderPage({ params }: { params: Promise<{ id:
         <LeaderForm
           leader={leader}
           action={saveLeader.bind(null, leader.id, leader.leaderContact?.id ?? null)}
+          lifeGroupLeaders={lifeGroupLeaders}
         />
         <aside className="space-y-5 lg:sticky lg:top-8">
           <div className={`${card} flex items-center gap-4 p-4`}>

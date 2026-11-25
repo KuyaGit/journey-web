@@ -8,8 +8,11 @@ import {
   GENDER_LABELS,
   LIFE_STAGES,
   LIFE_STAGE_LABELS,
+  canBeLifeGroupLeader,
   slugify,
   type Gender,
+  type LifeGroupLeaderOption,
+  type LifeStage,
 } from "@/lib/leaders/schema";
 import type { AdminLeader } from "@/lib/hygraph/leaders";
 import type { HumanChallenge } from "@/lib/human-check";
@@ -17,6 +20,7 @@ import { HumanCheck } from "./human-check";
 import { Icon } from "./icons";
 import { LoadingOverlay } from "./loading-overlay";
 import { ImageCropper } from "./image-cropper";
+import { LeaderPicker } from "./leader-picker";
 import { btnGhost, btnPrimary, card, inputCls, labelCls } from "./ui";
 
 type Props = {
@@ -28,6 +32,8 @@ type Props = {
   initialName?: string;
   /** When set, the submit button stays disabled until the visitor passes the "I'm not a robot" check. */
   humanCheck?: () => Promise<HumanChallenge | null>;
+  /** Approved, active leaders. Filtered here by the chosen gender and life stage. */
+  lifeGroupLeaders: LifeGroupLeaderOption[];
 };
 
 const GROUP_LABELS: Record<Gender, string> = {
@@ -123,6 +129,7 @@ export function LeaderForm({
   lockedEmail,
   initialName,
   humanCheck,
+  lifeGroupLeaders,
 }: Props) {
   const invite = variant === "invite";
   const [state, formAction, pending] = useActionState<SaveState, FormData>(action, undefined);
@@ -132,6 +139,17 @@ export function LeaderForm({
   const [slugTouched, setSlugTouched] = useState(!!leader);
   // A leader serves their own gender, so this drives the read-only "group" line and the LGBT toggle.
   const [gender, setGender] = useState<Gender | "">(leader?.gender ?? "");
+  // The leader's own stage. Together with gender it decides who can be their Life Group leader.
+  const [stage, setStage] = useState<LifeStage | "">(leader?.lifeStages ?? "");
+  const [lglId, setLglId] = useState(leader?.lifeGroupLeader?.id ?? "");
+  const lglOptions =
+    gender && stage
+      ? lifeGroupLeaders.filter(
+          (o) => o.id !== leader?.id && canBeLifeGroupLeader(o, { gender, lifeStage: stage }),
+        )
+      : [];
+  // Changing gender or stage can rule out the current choice; then the picker goes back to empty.
+  const lglValue = lglOptions.some((o) => o.id === lglId) ? lglId : "";
 
   return (
     <form
@@ -259,7 +277,7 @@ export function LeaderForm({
         </fieldset>
 
         <fieldset>
-          <legend className={labelCls}>{invite ? "Life stage you lead *" : "Life stage served *"}</legend>
+          <legend className={labelCls}>{invite ? "Your life stage *" : "Leader's life stage *"}</legend>
           <div className="mt-2 flex flex-wrap gap-2">
             {LIFE_STAGES.map((s) => (
               <Choice
@@ -270,10 +288,26 @@ export function LeaderForm({
                 label={LIFE_STAGE_LABELS[s]}
                 defaultChecked={leader?.lifeStages === s}
                 required
+                onChange={() => setStage(s)}
               />
             ))}
           </div>
         </fieldset>
+
+        <LeaderPicker
+          name="lifeGroupLeader"
+          label={invite ? "Your Life Group leader *" : "Life Group leader *"}
+          options={lglOptions}
+          value={lglValue}
+          onChange={setLglId}
+          disabled={!gender || !stage}
+          disabledText={`Choose ${invite ? "your" : "the"} gender and life stage first`}
+          hint={
+            gender && stage && lglOptions.length === 0
+              ? `No approved leader matches ${invite ? "your" : "this"} gender and life stage yet. Ask your admin.`
+              : `The leader of ${invite ? "your" : "their"} own Life Group, from ${invite ? "your" : "their"} life stage or the one above it.`
+          }
+        />
 
         <div className="grid gap-3 sm:grid-cols-2">
           {/* An LGBT leader's group is for LGBT members already, so the server turns this on for them. */}

@@ -27,6 +27,38 @@ export const LIFE_STAGE_SHORT: Record<LifeStage, string> = {
   anointedYouth: "Youth",
 };
 
+// LIFE_STAGES runs oldest -> youngest, so index - 1 is one stage older.
+
+/** The next older stage (Youth -> Young Adult -> Adult), or null for Adult. */
+export function olderStage(stage: LifeStage): LifeStage | null {
+  return LIFE_STAGES[LIFE_STAGES.indexOf(stage) - 1] ?? null;
+}
+
+/** A leader that can be picked as someone's Life Group leader. Public data only. */
+export type LifeGroupLeaderOption = {
+  id: string;
+  name: string;
+  gender: Gender | null;
+  lifeStages: LifeStage | null;
+  imageUrl: string | null;
+};
+
+/**
+ * Who a leader can pick as their own Life Group leader: someone in their life stage or the next older
+ * one (Young Adult -> Young Adult or Adult), of the same gender. LGBT leaders can pick any gender,
+ * since their own Life Group leader is often a men's or women's group leader.
+ */
+export function canBeLifeGroupLeader(
+  candidate: LifeGroupLeaderOption,
+  leader: { gender: Gender; lifeStage: LifeStage },
+): boolean {
+  if (!candidate.lifeStages) return false;
+  if (candidate.lifeStages !== leader.lifeStage && candidate.lifeStages !== olderStage(leader.lifeStage)) {
+    return false;
+  }
+  return leader.gender === "lgbtqia" || candidate.gender === leader.gender;
+}
+
 const FACEBOOK_HOST = /^(?:(?:www|m|web|mbasic)\.)?(?:facebook|fb)\.com$/;
 // First path segments that are Facebook pages, not someone's profile.
 const FACEBOOK_NON_PROFILE = new Set([
@@ -78,6 +110,8 @@ export type LeaderInput = {
   /** Always `[gender]`: a leader serves their own gender. Set by the server, never posted. */
   supportedGenders: Gender[];
   lifeStages: LifeStage;
+  /** Id of this leader's own Life Group leader. Checked against the rules in the save actions. */
+  lifeGroupLeaderId: string;
   acceptsLgbt: boolean;
   isActive: boolean;
   facebookUrl: string;
@@ -121,14 +155,16 @@ export function parseLeaderForm(fd: FormData): ParseResult {
   const genderRaw = String(fd.get("gender") ?? "");
   const stageRaw = String(fd.get("lifeStages") ?? "");
   const memberRaw = String(fd.get("memberCount") ?? "").trim();
+  const lifeGroupLeaderId = String(fd.get("lifeGroupLeader") ?? "").trim();
 
   if (!name) errors.push("Name is required.");
   if (!slug) errors.push("Slug is required.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("A valid contact email is required.");
   if (!genderRaw) errors.push("Please choose a gender.");
   else if (!isGender(genderRaw)) errors.push("Invalid gender.");
-  if (!stageRaw) errors.push("Please choose the life stage you lead.");
+  if (!stageRaw) errors.push("Please choose your life stage.");
   else if (!isStage(stageRaw)) errors.push("Invalid life stage.");
+  if (!lifeGroupLeaderId) errors.push("Please choose your Life Group leader.");
 
   const urls = {
     facebookUrl: String(fd.get("facebookUrl") ?? "").trim(),
@@ -166,6 +202,7 @@ export function parseLeaderForm(fd: FormData): ParseResult {
       // A leader serves their own gender. Any posted supportedGenders is ignored on purpose.
       supportedGenders: [gender],
       lifeStages: stageRaw as LifeStage,
+      lifeGroupLeaderId,
       // An LGBT leader's group is for LGBT members, so the toggle is implied.
       acceptsLgbt: gender === "lgbtqia" || fd.get("acceptsLgbt") === "on",
       isActive: fd.get("isActive") === "on",
