@@ -12,10 +12,12 @@ import {
   unpublishLeader,
   updateLeader,
 } from "@/lib/hygraph/leaders";
+import { addTag, publishTags } from "@/lib/hygraph/tags";
 import { uploadFormImage } from "@/lib/leaders/image";
 import { lifeGroupLeaderError } from "@/lib/leaders/life-group";
 import { reviewState } from "@/lib/leaders/review";
 import { parseLeaderForm } from "@/lib/leaders/schema";
+import type { AddTagResult, TagKind } from "@/lib/leaders/tags";
 
 export type SaveState = { errors?: string[] } | undefined;
 
@@ -71,9 +73,24 @@ async function requireLeader(id: string) {
   return leader;
 }
 
-/** Approve & publish: publishes the contact, the image, then the leader. */
+/** Approve & publish: publishes the leader's new hobbies/interests, the contact, the image, then the leader. */
 export async function approveAction(formData: FormData) {
-  return run(() => publishLeader(String(formData.get("id"))));
+  return run(async () => {
+    const leader = await requireLeader(String(formData.get("id")));
+    await Promise.all([publishTags("hobby", leader.hobbies), publishTags("interest", leader.interests)]);
+    await publishLeader(leader.id);
+  });
+}
+
+/** "Add" in the admin form: the new hobby/interest joins the shared list right away, published. */
+export async function addTagAction(kind: TagKind, name: string): Promise<AddTagResult> {
+  await requireAdmin();
+  if (kind !== "hobby" && kind !== "interest") return { ok: false, error: "Unknown list." };
+  try {
+    return { ok: true, name: await addTag(kind, String(name), { publish: true }) };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Couldn't add it. Please try again." };
+  }
 }
 
 export async function unpublishAction(formData: FormData) {

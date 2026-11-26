@@ -2,15 +2,9 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { LIFE_STAGES, LIFE_STAGE_SHORT, type LifeGroupLeaderOption } from "@/lib/leaders/schema";
+import { fold } from "@/lib/text";
 import { Avatar } from "./avatar";
 import { Icon } from "./icons";
-
-/** Lower-case, accents removed, so "jose" finds "José". */
-const fold = (s: string) =>
-  s
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
 
 const stageLabel = (o: LifeGroupLeaderOption) =>
   o.lifeStages ? `Anointed ${LIFE_STAGE_SHORT[o.lifeStages]}` : "No life stage";

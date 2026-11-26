@@ -4,7 +4,7 @@ import Link from "next/link";
 import { startTransition, useActionState, useState } from "react";
 import type { SaveState } from "@/app/admin/(panel)/leaders/actions";
 import {
-  GENDERS,
+  LEADER_GENDERS,
   GENDER_LABELS,
   LIFE_STAGES,
   LIFE_STAGE_LABELS,
@@ -16,11 +16,13 @@ import {
 } from "@/lib/leaders/schema";
 import type { AdminLeader } from "@/lib/hygraph/leaders";
 import type { HumanChallenge } from "@/lib/human-check";
+import type { AddTagResult, TagKind } from "@/lib/leaders/tags";
 import { HumanCheck } from "./human-check";
 import { Icon } from "./icons";
 import { LoadingOverlay } from "./loading-overlay";
 import { ImageCropper } from "./image-cropper";
 import { LeaderPicker } from "./leader-picker";
+import { TagSelect } from "./tag-select";
 import { btnGhost, btnPrimary, card, inputCls, labelCls } from "./ui";
 
 type Props = {
@@ -34,6 +36,11 @@ type Props = {
   humanCheck?: () => Promise<HumanChallenge | null>;
   /** Approved leaders (active or not). Filtered here by the chosen gender and life stage. */
   lifeGroupLeaders: LifeGroupLeaderOption[];
+  /** Approved hobbies and interests from Hygraph, for the multi-selects. */
+  hobbyOptions: string[];
+  interestOptions: string[];
+  /** Saves a new hobby/interest in Hygraph (published for admins, a draft from the public invite). */
+  addTag: (kind: TagKind, name: string) => Promise<AddTagResult>;
 };
 
 const GROUP_LABELS: Record<Gender, string> = {
@@ -130,6 +137,9 @@ export function LeaderForm({
   initialName,
   humanCheck,
   lifeGroupLeaders,
+  hobbyOptions,
+  interestOptions,
+  addTag,
 }: Props) {
   const invite = variant === "invite";
   const [state, formAction, pending] = useActionState<SaveState, FormData>(action, undefined);
@@ -256,7 +266,7 @@ export function LeaderForm({
         <fieldset>
           <legend className={labelCls}>{invite ? "Your gender *" : "Leader's gender *"}</legend>
           <div className="mt-2 flex flex-wrap gap-2">
-            {GENDERS.map((g) => (
+            {LEADER_GENDERS.map((g) => (
               <Choice
                 key={g}
                 type="radio"
@@ -315,19 +325,16 @@ export function LeaderForm({
         />
 
         <div className="grid gap-3 sm:grid-cols-2">
-          {/* An LGBT leader's group is for LGBT members already, so the server turns this on for them. */}
-          {gender !== "lgbtqia" && (
-            <Toggle
-              name="acceptsLgbt"
-              label="Accepts LGBT"
-              hint={
-                invite
-                  ? "Your group welcomes LGBT members."
-                  : "Shown to LGBT members who pick this group."
-              }
-              defaultChecked={leader?.acceptsLgbt ?? false}
-            />
-          )}
+          <Toggle
+            name="acceptsLgbt"
+            label="Accepts LGBT"
+            hint={
+              invite
+                ? "Your group welcomes LGBT members."
+                : "Shown to LGBT members who pick this group."
+            }
+            defaultChecked={leader?.acceptsLgbt ?? false}
+          />
           {!invite && (
             <Toggle
               name="isActive"
@@ -345,19 +352,33 @@ export function LeaderForm({
             : "Facebook is required; the rest is optional. Shown on the leader's card and profile."
         }
       >
-        <div className="grid gap-5 sm:grid-cols-3">
-          {(["hobbies", "interests", "languages"] as const).map((f) => (
-            <label key={f} className={labelCls}>
-              {f.replace(/^./, (c) => c.toUpperCase())}
-              <input
-                name={f}
-                placeholder="Comma separated"
-                defaultValue={leader?.[f].join(", ") ?? ""}
-                className={inputCls}
-              />
-            </label>
-          ))}
+        <div className="grid gap-5 sm:grid-cols-2">
+          <TagSelect
+            name="hobbies"
+            label="Hobbies"
+            options={hobbyOptions}
+            defaultValue={leader?.hobbies}
+            onAdd={(n) => addTag("hobby", n)}
+            hint="Pick from the list, or type a new one and add it."
+          />
+          <TagSelect
+            name="interests"
+            label="Interests"
+            options={interestOptions}
+            defaultValue={leader?.interests}
+            onAdd={(n) => addTag("interest", n)}
+            hint="Pick from the list, or type a new one and add it."
+          />
         </div>
+        <label className={labelCls}>
+          Languages
+          <input
+            name="languages"
+            placeholder="Comma separated"
+            defaultValue={leader?.languages.join(", ") ?? ""}
+            className={inputCls}
+          />
+        </label>
         <div className="grid gap-5 sm:grid-cols-3">
           {(
             [

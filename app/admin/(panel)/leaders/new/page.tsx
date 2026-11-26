@@ -3,11 +3,16 @@ import { requireAdmin } from "@/lib/auth/dal";
 import { LeaderForm } from "@/components/admin/leader-form";
 import { PageHeader } from "@/components/admin/ui";
 import { listLifeGroupLeaderOptions } from "@/lib/hygraph/leaders";
-import { saveLeader } from "../actions";
+import { listTagOptions } from "@/lib/hygraph/tags";
+import { addTagAction, saveLeader } from "../actions";
 
 export default async function NewLeaderPage() {
   await requireAdmin();
-  const lifeGroupLeaders = await listLifeGroupLeaderOptions();
+  const [lifeGroupLeaders, hobbyOptions, interestOptions] = await Promise.all([
+    listLifeGroupLeaderOptions(),
+    listTagOptions("hobby"),
+    listTagOptions("interest"),
+  ]);
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div>
@@ -22,7 +27,13 @@ export default async function NewLeaderPage() {
           />
         </div>
       </div>
-      <LeaderForm action={saveLeader.bind(null, null, null)} lifeGroupLeaders={lifeGroupLeaders} />
+      <LeaderForm
+        action={saveLeader.bind(null, null, null)}
+        lifeGroupLeaders={lifeGroupLeaders}
+        hobbyOptions={hobbyOptions}
+        interestOptions={interestOptions}
+        addTag={addTagAction}
+      />
     </div>
   );
 }

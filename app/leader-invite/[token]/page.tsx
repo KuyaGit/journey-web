@@ -2,8 +2,9 @@ import { LeaderForm } from "@/components/admin/leader-form";
 import { Icon, type IconName } from "@/components/admin/icons";
 import { card } from "@/components/admin/ui";
 import { contactEmailExists, listLifeGroupLeaderOptions } from "@/lib/hygraph/leaders";
+import { listTagOptions } from "@/lib/hygraph/tags";
 import { verifyInvite } from "@/lib/invites/token";
-import { requestHumanCheck, submitInvite } from "./actions";
+import { addInviteTag, requestHumanCheck, submitInvite } from "./actions";
 
 function Notice({ icon, title, children }: { icon: IconName; title: string; children: React.ReactNode }) {
   return (
@@ -50,7 +51,11 @@ export default async function LeaderInvitePage({ params }: { params: Promise<{ t
     );
   }
 
-  const lifeGroupLeaders = await listLifeGroupLeaderOptions();
+  const [lifeGroupLeaders, hobbyOptions, interestOptions] = await Promise.all([
+    listLifeGroupLeaderOptions(),
+    listTagOptions("hobby"),
+    listTagOptions("interest"),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -81,6 +86,9 @@ export default async function LeaderInvitePage({ params }: { params: Promise<{ t
         action={submitInvite.bind(null, token)}
         humanCheck={requestHumanCheck.bind(null, token)}
         lifeGroupLeaders={lifeGroupLeaders}
+        hobbyOptions={hobbyOptions}
+        interestOptions={interestOptions}
+        addTag={addInviteTag.bind(null, token)}
       />
     </div>
   );

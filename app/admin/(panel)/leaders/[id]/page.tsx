@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/dal";
 import { getLeader, listLifeGroupLeaderOptions } from "@/lib/hygraph/leaders";
+import { listTagOptions } from "@/lib/hygraph/tags";
 import { Avatar } from "@/components/admin/avatar";
 import { LeaderForm } from "@/components/admin/leader-form";
 import { MatchPreview } from "@/components/admin/match-preview";
@@ -12,12 +13,17 @@ import { PageHeader, Pill, btnRose, card } from "@/components/admin/ui";
 import { PendingChanges } from "@/components/admin/pending-changes";
 import { pendingChanges } from "@/lib/leaders/changes";
 import { reviewState } from "@/lib/leaders/review";
-import { approveAction, saveLeader } from "../actions";
+import { addTagAction, approveAction, saveLeader } from "../actions";
 
 export default async function EditLeaderPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  const [leader, lifeGroupLeaders] = await Promise.all([getLeader(id), listLifeGroupLeaderOptions()]);
+  const [leader, lifeGroupLeaders, hobbyOptions, interestOptions] = await Promise.all([
+    getLeader(id),
+    listLifeGroupLeaderOptions(),
+    listTagOptions("hobby"),
+    listTagOptions("interest"),
+  ]);
   if (!leader) notFound();
 
   const review = reviewState(leader);
@@ -66,6 +72,9 @@ export default async function EditLeaderPage({ params }: { params: Promise<{ id:
           leader={leader}
           action={saveLeader.bind(null, leader.id, leader.leaderContact?.id ?? null)}
           lifeGroupLeaders={lifeGroupLeaders}
+          hobbyOptions={hobbyOptions}
+          interestOptions={interestOptions}
+          addTag={addTagAction}
         />
         <aside className="space-y-5 lg:sticky lg:top-8">
           <div className={`${card} flex items-center gap-4 p-4`}>

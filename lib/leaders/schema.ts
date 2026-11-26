@@ -7,6 +7,9 @@ export const LIFE_STAGES = [
 ] as const;
 
 export type Gender = (typeof GENDERS)[number];
+
+/** A leader's own gender: Male or Female only. LGBT stays in GENDERS for members and for "Accepts LGBT". */
+export const LEADER_GENDERS = ["male", "female"] as const satisfies readonly Gender[];
 export type LifeStage = (typeof LIFE_STAGES)[number];
 
 export const GENDER_LABELS: Record<Gender, string> = {
@@ -47,13 +50,14 @@ export type LifeGroupLeaderOption = {
 
 /**
  * Who a leader can pick as their own Life Group leader: someone in their life stage or the next older
- * one (Young Adult -> Young Adult or Adult), of the same gender. LGBT leaders can pick any gender,
- * since their own Life Group leader is often a men's or women's group leader.
+ * one (Young Adult -> Young Adult or Adult), of the same gender. Only Male and Female leaders lead a
+ * Life Group, so LGBT leaders are never a choice. LGBT leaders themselves can pick a Male or Female leader.
  */
 export function canBeLifeGroupLeader(
   candidate: LifeGroupLeaderOption,
   leader: { gender: Gender; lifeStage: LifeStage },
 ): boolean {
+  if (candidate.gender !== "male" && candidate.gender !== "female") return false;
   if (!candidate.lifeStages) return false;
   if (candidate.lifeStages !== leader.lifeStage && candidate.lifeStages !== olderStage(leader.lifeStage)) {
     return false;
@@ -142,7 +146,7 @@ const list = (v: FormDataEntryValue | null) =>
     .map((s) => s.trim())
     .filter(Boolean);
 
-const isGender = (v: string): v is Gender => (GENDERS as readonly string[]).includes(v);
+const isLeaderGender = (v: string): v is Gender => (LEADER_GENDERS as readonly string[]).includes(v);
 const isStage = (v: string): v is LifeStage => (LIFE_STAGES as readonly string[]).includes(v);
 
 export type ParseResult =
@@ -166,7 +170,7 @@ export function parseLeaderForm(
   if (!slug) errors.push("Slug is required.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push("A valid contact email is required.");
   if (!genderRaw) errors.push("Please choose a gender.");
-  else if (!isGender(genderRaw)) errors.push("Invalid gender.");
+  else if (!isLeaderGender(genderRaw)) errors.push("Please choose Male or Female.");
   if (!stageRaw) errors.push("Please choose your life stage.");
   else if (!isStage(stageRaw)) errors.push("Invalid life stage.");
   if (requireLifeGroupLeader && !lifeGroupLeaderId) errors.push("Please choose your Life Group leader.");
@@ -208,8 +212,7 @@ export function parseLeaderForm(
       supportedGenders: [gender],
       lifeStages: stageRaw as LifeStage,
       lifeGroupLeaderId,
-      // An LGBT leader's group is for LGBT members, so the toggle is implied.
-      acceptsLgbt: gender === "lgbtqia" || fd.get("acceptsLgbt") === "on",
+      acceptsLgbt: fd.get("acceptsLgbt") === "on",
       isActive: fd.get("isActive") === "on",
       ...urls,
       hobbies: list(fd.get("hobbies")),

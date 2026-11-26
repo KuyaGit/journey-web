@@ -5,11 +5,13 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { SaveState } from "@/app/admin/(panel)/leaders/actions";
 import { contactEmailExists, createLeader } from "@/lib/hygraph/leaders";
+import { addTag } from "@/lib/hygraph/tags";
 import { issueHumanCheck, verifyHumanCheck, type HumanChallenge } from "@/lib/human-check";
 import { verifyInvite } from "@/lib/invites/token";
 import { uploadFormImage } from "@/lib/leaders/image";
 import { lifeGroupLeaderError } from "@/lib/leaders/life-group";
 import { parseLeaderForm, slugify } from "@/lib/leaders/schema";
+import type { AddTagResult, TagKind } from "@/lib/leaders/tags";
 import { clientIp, createLimiter } from "@/lib/rate-limit";
 
 // Counts every submit attempt per IP, not only failures. One QR code is shared by many leaders, often
@@ -18,6 +20,9 @@ import { clientIp, createLimiter } from "@/lib/rate-limit";
 const limiter = createLimiter({ max: 40, windowMs: 60 * 60 * 1000 });
 
 const challengeLimiter = createLimiter({ max: 120, windowMs: 60 * 60 * 1000 });
+
+// New hobbies/interests typed on the public form, per IP.
+const tagLimiter = createLimiter({ max: 30, windowMs: 60 * 60 * 1000 });
 
 const INVALID = "This invite link is no longer valid. Ask your admin for a new one.";
 const EXPIRED = "This QR code has expired. Ask your admin for a new one.";
@@ -102,4 +107,30 @@ export async function submitInvite(token: string, _prev: SaveState, formData: Fo
   }
 
   redirect("/leader-invite/thanks");
+}
+
+/**
+ * "Add" on the public form: saves a new hobby/interest to Hygraph as a DRAFT only. It shows in everyone's
+ * dropdown once an admin approves a leader who uses it (approveAction publishes it). Never publish here.
+ */
+export async function addInviteTag(token: string, kind: TagKind, name: string): Promise<AddTagResult> {
+  const claims = await verifyInvite(token);
+  if (claims.status === "expired") return { ok: false, error: EXPIRED };
+  if (claims.status === "invalid") return { ok: false, error: INVALID };
+  if (kind !== "hobby" && kind !== "interest") return { ok: false, error: "Unknown list." };
+
+  const ip = clientIp(await headers());
+  if (tagLimiter.isBlocked(ip)) return { ok: false, error: "Too many new items. Please try again later." };
+  tagLimiter.fail(ip);
+
+  try {
+    return { ok: true, name: await addTag(kind, String(name), { publish: false }) };
+  } catch (e) {
+    // addTag's own messages are safe to show; anything from Hygraph is not.
+    const msg = e instanceof Error ? e.message : "";
+    return {
+      ok: false,
+      error: /^(Type a name|Keep it under)/.test(msg) ? msg : "Couldn't add it. Please try again.",
+    };
+  }
 }
